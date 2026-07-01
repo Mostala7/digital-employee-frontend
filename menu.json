@@ -1,0 +1,113 @@
+{
+  "businessId": "{{businessId}}",
+  "items": [
+    {
+      "name": "Classic Smash Burger",
+      "description": "لحم بجبن شيدر وصوص خاص",
+      "price": 120,
+      "categoryName": "Burgers",
+      "isAvailable": true,
+      "ingredients": ["beef patty", "cheddar cheese", "brioche bun", "signature sauce", "pickles"],
+      "allergens": ["Dairy", "Gluten", "Egg"],
+      "calories": 650,
+      "spicyLevel": 0,
+      "customizationOptions": ["No Cheese", "No Pickles", "Extra Sauce"]
+    },
+    {
+      "name": "Double Smash Burger",
+      "description": "قرصتين لحم مع بيكون",
+      "price": 155,
+      "categoryName": "Burgers",
+      "isAvailable": true,
+      "ingredients": ["2 beef patties", "beef bacon", "cheddar cheese", "brioche bun", "signature sauce"],
+      "allergens": ["Dairy", "Gluten", "Egg"],
+      "calories": 920,
+      "spicyLevel": 0,
+      "customizationOptions": ["No Bacon", "No Cheese", "Extra Patty"]
+    },
+    {
+      "name": "Spicy Jalapeno Burger",
+      "description": "برجر لحم مع هالبينو وصوص حار",
+      "price": 135,
+      "categoryName": "Burgers",
+      "isAvailable": true,
+      "ingredients": ["beef patty", "pepper jack cheese", "jalapenos", "spicy mayo", "brioche bun"],
+      "allergens": ["Dairy", "Gluten", "Egg"],
+      "calories": 710,
+      "spicyLevel": 3,
+      "customizationOptions": ["Mild Sauce", "Extra Jalapenos"]
+    },
+    {
+      "name": "Crispy Chicken Sandwich",
+      "description": "صدور دجاج مقرمشة مع خس ومايونيز",
+      "price": 110,
+      "categoryName": "Chicken",
+      "isAvailable": true,
+      "ingredients": ["fried chicken breast", "lettuce", "mayonnaise", "brioche bun"],
+      "allergens": ["Gluten", "Egg", "Dairy"],
+      "calories": 680,
+      "spicyLevel": 0,
+      "customizationOptions": ["Spicy Mayo", "No Lettuce"]
+    },
+    {
+      "name": "Crispy Fries",
+      "description": "بطاطس مقلية مقرمشة",
+      "price": 35,
+      "categoryName": "Sides",
+      "isAvailable": true,
+      "ingredients": ["potatoes", "salt", "frying oil"],
+      "allergens": [],
+      "calories": 350,
+      "spicyLevel": 0,
+      "customizationOptions": ["No Salt", "Add Cheese Sauce"]
+    },
+    {
+      "name": "Cheesy Loaded Fries",
+      "description": "بطاطس مقلية مع صوص الجبنة والبيكون",
+      "price": 60,
+      "categoryName": "Sides",
+      "isAvailable": true,
+      "ingredients": ["potatoes", "cheddar cheese sauce", "beef bacon bits", "jalapenos"],
+      "allergens": ["Dairy"],
+      "calories": 550,
+      "spicyLevel": 1,
+      "customizationOptions": ["No Jalapenos", "No Bacon", "Sauce on the side"]
+    },
+    {
+      "name": "Pepsi",
+      "description": "علبة بيبسي مبردة",
+      "price": 20,
+      "categoryName": "Drinks",
+      "isAvailable": true,
+      "ingredients": ["carbonated water", "sugar", "caramel color", "caffeine"],
+      "allergens": [],
+      "calories": 150,
+      "spicyLevel": 0,
+      "customizationOptions": []
+    },
+    {
+      "name": "Fresh Orange Juice",
+      "description": "عصير برتقال فريش بدون سكر مضاف",
+      "price": 40,
+      "categoryName": "Drinks",
+      "isAvailable": true,
+      "ingredients": ["fresh oranges"],
+      "allergens": [],
+      "calories": 110,
+      "spicyLevel": 0,
+      "customizationOptions": ["Add Sugar", "Add Ice"]
+    },
+    {
+      "name": "Chocolate Brownie",
+      "description": "براوني شوكولاتة غنية",
+      "price": 50,
+      "categoryName": "Desserts",
+      "isAvailable": false,
+      "ingredients": ["chocolate", "butter", "sugar", "flour", "eggs", "walnuts"],
+      "allergens": ["Dairy", "Gluten", "Egg", "Nuts"],
+      "calories": 400,
+      "spicyLevel": 0,
+      "customizationOptions": ["Warm it up", "Add Vanilla Ice Cream"]
+    }
+  ]
+}

@@ -1,0 +1,408 @@
+.logs-page-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Topbar Actions (Search & Filter) ─── */
+.logs-search {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 1rem;
+  min-width: 250px;
+  height: 40px;
+  transition: border-color 0.2s;
+}
+
+.logs-search:focus-within {
+  border-color: #0880d8;
+  box-shadow: 0 0 0 3px rgba(8, 128, 216, 0.1);
+}
+
+.logs-search .search-icon {
+  color: #3b82f6; /* Blue tint */
+  margin-right: 0.5rem;
+}
+
+.logs-search input {
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+/* ─── Filter Menu System ─── */
+.filter-container {
+  position: relative;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  height: 40px;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.filter-btn.active {
+  background: #f0f4ff;
+  border-color: #0880d8;
+  color: #0880d8;
+}
+
+.filter-badge {
+  background: #0880d8;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+/* ─── Advanced Filtering Popover ─── */
+.filter-popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: var(--border-radius-md);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  width: 280px;
+  z-index: 100;
+  padding: 1.5rem;
+  animation: slideDropdown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.filter-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.filter-popover-header h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #12347b;
+  margin: 0;
+}
+
+.clear-filters-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.clear-filters-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-section h5 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Custom Checkbox Design */
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #334155;
+  font-weight: 500;
+  user-select: none;
+}
+
+.filter-checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.filter-checkbox-label:hover input ~ .checkbox-custom {
+  background-color: #e2e8f0;
+}
+
+.filter-checkbox-label input:checked ~ .checkbox-custom {
+  background-color: #0880d8;
+  border-color: #0880d8;
+}
+
+.filter-checkbox-label input:checked ~ .checkbox-custom::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.tiny-stars {
+  margin-top: 1px;
+}
+
+/* ─── Subheader ─── */
+.logs-subheader {
+  padding: 0 1rem;
+}
+
+.logs-subheader h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.logs-subheader p {
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 900px;
+}
+
+/* Table Cells specialized styling */
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.customer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.customer-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sentiment-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sentiment-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pill-neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.pill-positive {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.pill-negative {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.feedback-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.status-completed {
+  background: #22c55e;
+}
+
+.status-abandoned {
+  background: #ef4444;
+}
+
+.status-in-progress {
+  background: #f97316;
+}
+
+.replay-btn {
+  background: #3f51b5; /* Blue/Indigo color for replay button */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.replay-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Unified Tag System ─── */
+.log-tag {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Channel */
+.tag-channel {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* Routing */
+.tag-ai {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.tag-human {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* State */
+.tag-status-resolved {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+.tag-status-active {
+  background: #e0e7ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+.tag-status-escalated {
+  background: #ffe4e6;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+/* Sentiment */
+.tag-sentiment-satisfied {
+  background: #d1fae5;
+  color: #065f46;
+}
+.tag-sentiment-neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+.tag-sentiment-angry {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ─── View Chat Button ─── */
+.log-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.35rem 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.log-view-btn:hover {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #ffffff;
+}

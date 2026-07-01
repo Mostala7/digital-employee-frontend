@@ -1,0 +1,233 @@
+/* ─────────────────────────────────────────
+   CALL PAGE — Compact Audio & Analysis Layout + Modal
+───────────────────────────────────────── */
+
+.call-compact-audio {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.call-compact-audio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.compact-audio-player {
+  width: 100%;
+  height: 38px;
+  border-radius: 6px;
+  outline: none;
+}
+
+/* Compact Analysis List */
+.call-analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.analysis-compact-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.analysis-compact-card:hover {
+  border-color: #cbd5e1;
+  background: #fdfdfe;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.analysis-compact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.analysis-compact-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analysis-compact-preview {
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.view-popup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.9rem;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.view-popup-btn:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ─────────────────────────────────────────
+   BIG POPUP MODAL FOR READING
+───────────────────────────────────────── */
+.call-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.call-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.call-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.call-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.call-modal-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.call-modal-close:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.call-modal-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-tab-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.modal-tab-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.call-modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.call-modal-body.rtl-content {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.05rem;
+}
+
+.call-modal-footer {
+  padding: 1rem 1.75rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

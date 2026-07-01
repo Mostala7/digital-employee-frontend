@@ -1,0 +1,162 @@
+.icon-gradient-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.sidebar {
+  background: white;
+  height: 100vh;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.03);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.sidebar.expanded {
+  width: 260px;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* Toggle Arrow Button */
+.toggle-collapse-btn {
+  position: absolute;
+  top: 3.5rem;
+  right: -16px;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 60;
+}
+
+.toggle-collapse-btn:hover {
+  background: #f8fafc;
+  color: #12347b;
+}
+
+/* Logo */
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  height: 80px;
+  gap: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logo-icon {
+  height: 55px; /* Matched exactly to navbar height */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -5px; /* Offset the padding slightly so a big logo fits when collapsed */
+}
+
+.custom-ai-logo {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, #0880d8 0%, #660399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 1rem;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  width: 100%;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #152238;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.nav-icon-container {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.sidebar.collapsed .nav-icon-container {
+  margin-right: 0;
+  margin: 0 auto;
+}
+
+.nav-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+/* Active and Hover States */
+.nav-link:hover {
+  background: #f8fafc;
+}
+
+.nav-link.active {
+  background: #eef2ff;
+}
+
+.nav-link.active .nav-label {
+  font-weight: 600;
+}

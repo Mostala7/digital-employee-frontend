@@ -1,0 +1,75 @@
+.features-section {
+  width: 100%;
+  padding: 0 1rem 1rem 1rem; /* 0 top padding, relies on Stats bottom padding for the 1rem gap */
+  display: flex;
+  justify-content: center;
+  height: 100vh; /* Next full viewport height */
+}
+
+.features-container {
+  max-width: var(--max-width);
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 3rem 3rem; /* Same horizontal padding as Hero/Stats (3rem) */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* spread the two rows evenly vertically */
+  gap: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+}
+
+.feature-text {
+  flex: 0 0 50%; /* Take up exactly half */
+}
+
+.feature-text h2 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.feature-text p {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.feature-image {
+  flex: 0 0 45%; /* Same fixed flex-basis for both images */
+  display: flex;
+  justify-content: flex-start; /* Ensure left alignment inside the wrapper */
+  align-items: center;
+}
+
+.feature-image img {
+  width: 100%; /* Force both images to exactly fill their 45% wrapper */
+  height: 35vh; /* Fixed symmetric height */
+  object-fit: cover; /* Fill the area nicely without distortion or varying widths */
+  border-radius: var(
+    --border-radius-md
+  ); /* Add a slight radius so they look polished */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Add consistency with a shadow */
+}
+
+@media (max-width: 900px) {
+  .feature-row {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  .features-section {
+    height: auto;
+  }
+  .feature-image img {
+    max-height: 300px;
+  }
+}

@@ -1,0 +1,273 @@
+/* ── Stat Section Container ──────────────────────────── */
+.cust-stat-section {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Period Toggle Bar ───────────────────────────────── */
+.cust-period-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  border: 0px;
+}
+
+.cust-period-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.cust-period-btn:hover {
+  border-color: #818cf8;
+  color: #4f46e5;
+}
+
+.cust-period-btn:focus,
+.cust-period-btn:focus-visible {
+  outline: none;
+  border: 1px solid #e2e8f0;
+}
+
+.cust-clear-range {
+  margin-left: 4px;
+  padding: 0.38rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cust-clear-range:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+/* ── Calendar Popup ──────────────────────────────────── */
+.cust-calendar-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.cust-calendar-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #f1f5f9;
+  background: white;
+}
+
+.cust-cal-cancel {
+  padding: 0.4rem 1.1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cust-cal-cancel:hover {
+  background: #f1f5f9;
+}
+
+.cust-cal-ok {
+  padding: 0.4rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: #6d28d9;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cust-cal-ok:hover {
+  background: #5b21b6;
+}
+
+/* ── Dark Stat Grid ──────────────────────────────────── */
+.cust-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 300px);
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* ── Dark Card — grid mesh background ──────────────────── */
+.cust-dark-card {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(255, 255, 255, 0.045) 28px,
+      rgba(255, 255, 255, 0.045) 29px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 28px,
+      rgba(255, 255, 255, 0.045) 28px,
+      rgba(255, 255, 255, 0.045) 29px
+    ),
+    radial-gradient(
+      ellipse at 55% 0%,
+      rgba(102, 3, 153, 0.65) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, #1a0a2e 0%, #0d0118 55%, #000000 100%);
+  border-radius: 16px;
+  padding: 1.75rem 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  text-align: center;
+  min-height: 170px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(102, 3, 153, 0.3);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cust-dark-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  box-shadow: inset 0 0 50px rgba(102, 3, 153, 0.1);
+  pointer-events: none;
+}
+
+.cust-dark-card:hover {
+  transform: translateY(-3px);
+}
+
+.cust-dark-icon {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cust-dark-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cust-dark-label {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .cust-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cust-stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Avatar ─────────────────────────────────────────────── */
+.customer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+/* ── Loyalty Tier Tags — inherits .log-tag shape ─────────── */
+/* New customer → same as tag-channel (grey) */
+.tag-tier-new {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Regular → amber, like tag-human */
+.tag-tier-regular {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* VIP → green, like tag-status-resolved */
+.tag-tier-vip {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* ── Customer ID chip ────────────────────────────────────── */
+.customer-id-chip {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  font-family: monospace;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .customer-stat-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-stat-strip {
+    grid-template-columns: 1fr;
+  }
+}

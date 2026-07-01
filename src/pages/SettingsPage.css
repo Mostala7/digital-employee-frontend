@@ -1,0 +1,237 @@
+/* ── Layout & Card ────────────────────────────── */
+.settings-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.settings-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-card p.subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+/* ── Tabs ──────────────────────────────────────── */
+.settings-tabs {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.settings-tab-btn {
+  background: none;
+  border: none;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.settings-tab-btn:hover {
+  color: #4f46e5;
+}
+
+.settings-tab-btn.active {
+  color: #4f46e5;
+  border-bottom: 2px solid #4f46e5;
+  font-weight: 600;
+}
+
+/* ── Form Groups ──────────────────────────────── */
+.settings-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.settings-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings-input, .settings-select {
+  padding: 0.65rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  transition: border-color 0.2s;
+  background-color: #f8fafc;
+}
+
+.settings-input:focus, .settings-select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background-color: white;
+}
+
+/* ── Toggle Switch ────────────────────────────── */
+.settings-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.settings-toggle-container:hover {
+  border-color: #cbd5e1;
+  background: white;
+}
+
+.toggle-info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+}
+
+.toggle-info span {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #cbd5e1;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-switch.active {
+  background: #4f46e5;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.active .toggle-knob {
+  transform: translateX(20px);
+}
+
+/* ── Slider ───────────────────────────────────── */
+.settings-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  outline: none;
+}
+
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4f46e5;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(79, 70, 229, 0.5);
+  transition: transform 0.1s;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* ── Save Action ──────────────────────────────── */
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.save-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #4f46e5;
+  color: white;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-settings-btn:hover {
+  background: #4338ca;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.save-settings-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

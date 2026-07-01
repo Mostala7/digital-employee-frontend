@@ -1,0 +1,161 @@
+/* ─── Pricing Page Wrapper ─── */
+.pricing-page-wrapper {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #f4f6fb;
+}
+
+/* ─── Progress Bar Section ─── */
+.progress-section {
+  width: 100%;
+  padding: 1rem 1rem 0 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.progress-container {
+  max-width: var(--max-width);
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem 3rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.progress-heading {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.progress-heading h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #12347b;
+  margin-bottom: 0.4rem;
+}
+
+.progress-heading p {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+/* ─── Step Tracker (minimal bar) ─── */
+.step-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.step-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d1d5e0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 0;
+  color: transparent;
+}
+
+.step.completed .step-circle {
+  background: #660399;
+}
+
+.step.active .step-circle {
+  background: #0880d8;
+  box-shadow: 0 0 0 4px rgba(8, 128, 216, 0.2);
+}
+
+.step-label {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b0b8c9;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.step.completed .step-label {
+  color: #660399;
+}
+
+.step.active .step-label {
+  color: #12347b;
+}
+
+/* ─── Connector Line ─── */
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: #d1d5e0;
+  border-radius: 2px;
+  margin-bottom: 1.4rem;
+}
+
+.step-connector.completed {
+  background: #660399;
+}
+
+.step-connector.active {
+  background: linear-gradient(90deg, #660399, #d1d5e0);
+}
+
+/* ─── Checkmark SVG inside completed steps ─── */
+.step-check {
+  width: 10px;
+  height: 10px;
+  stroke: white;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ─── Override pricing section for this page context ─── */
+.pricing-page-wrapper .pricing-section {
+  min-height: auto;
+  padding-top: 1.5rem;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .progress-container {
+    padding: 1.5rem 1.5rem;
+  }
+
+  .progress-heading h2 {
+    font-size: 1.3rem;
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.85rem;
+  }
+
+  .step-connector {
+    min-width: 30px;
+  }
+
+  .step-label {
+    font-size: 0.72rem;
+  }
+}

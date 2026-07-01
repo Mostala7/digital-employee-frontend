@@ -1,0 +1,81 @@
+.cta-section {
+  width: 100%;
+  padding: 0 1rem 1rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.cta-container {
+  max-width: var(--max-width);
+  width: 100%;
+  border-radius: var(--border-radius-lg);
+  padding: 4rem 3rem; /* 3rem horizontal padding as standard */
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a2e; /* Fallback dark color */
+  position: relative;
+  overflow: hidden;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+}
+
+/* Optional overlay if the text needs more contrast against the image */
+.cta-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 15, 40, 0.9) 0%,
+    rgba(20, 15, 40, 0.4) 60%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+.cta-content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 2.5rem;
+  line-height: 1.25;
+}
+
+.cta-btn {
+  background: white;
+  color: var(--color-purple-dark);
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .cta-title {
+    font-size: 2rem;
+  }
+  .cta-container::before {
+    background: linear-gradient(
+      90deg,
+      rgba(20, 15, 40, 0.9) 0%,
+      rgba(20, 15, 40, 0.7) 100%
+    );
+  }
+}

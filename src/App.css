@@ -1,0 +1,52 @@
+.app-container {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+.first-viewport {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 
+  Subtle background decorations to mimic the complex 
+  vector graphics in the background of the design 
+*/
+.bg-decoration {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+
+.shape-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--color-primary);
+  top: -100px;
+  left: -200px;
+}
+
+.shape-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--color-purple);
+  bottom: 100px;
+  right: -150px;
+  opacity: 0.3;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}

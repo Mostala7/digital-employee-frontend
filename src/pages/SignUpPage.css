@@ -1,0 +1,343 @@
+.login-page-wrapper {
+  background-color: white;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* We override the padding on Navbar occasionally to push it tight to the bounds */
+.login-page-wrapper .navbar-wrapper {
+  padding-bottom: 0;
+}
+.login-page-wrapper .navbar-container {
+  box-shadow: none;
+}
+
+.login-content {
+  display: flex;
+  flex: 1;
+  padding: 2rem;
+  justify-content: space-between;
+  gap: 4rem;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+  min-height: 0; /* Important for flex children scrolling/fitting */
+}
+
+.login-left {
+  flex: 1.1;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  padding: 2rem;
+}
+
+.login-image {
+  width: 90%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+}
+
+.login-right {
+  flex: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.login-logo img {
+  height: 60px;
+}
+
+.login-logo span {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(180deg, #0880d8 0%, #660399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 2px;
+}
+
+.auth-toggle {
+  display: flex;
+  width: 100%;
+  background: #f3f4fa; /* Soft pale purple/gray */
+  border-radius: 8px;
+  padding: 0; /* Tight padding to allow solid buttons */
+  margin-bottom: 2rem;
+  overflow: hidden; /* For smooth edge */
+}
+
+.toggle-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.8rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  color: #660399; /* Our purple */
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
+
+/* Styling the non-active state to have distinct visual text */
+.toggle-btn.sign-up-btn {
+  color: #4b4b6c;
+}
+
+.toggle-btn.active {
+  background: var(--gradient-btn); /* deep royal blue from the design */
+  color: white;
+  border-radius: 8px;
+}
+
+.login-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #152238; /* dark text */
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ced4da; /* Light border matching screenshot */
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #4b5563;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #3949ab;
+  box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #adb5bd;
+}
+
+.forgot-password {
+  display: block;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #adb5bd; /* Light slate under */
+  text-decoration: underline;
+  margin-top: 0.5rem;
+}
+
+.forgot-password:hover {
+  color: #6c757d;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 2.5rem; /* space for the eye button */
+}
+
+.password-input-wrapper .eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #adb5bd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.password-input-wrapper .eye-btn:hover {
+  color: #6c757d;
+}
+
+.password-hints {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.password-hints li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #8c98a4; /* Lighter default text color */
+  transition: color 0.2s;
+}
+
+.password-hints li.valid {
+  color: #152238; /* Dark text when valid */
+}
+
+.password-hints li svg {
+  flex-shrink: 0;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--gradient-btn); /* Deeper blue matching the Log In toggle */
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+
+.submit-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid #fca5a5;
+  font-weight: 500;
+}
+
+.divider-container {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.divider-container::before,
+.divider-container::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.divider-text {
+  padding: 0 1rem;
+  color: #ced4da;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.social-login {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.social-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.privacy-policy {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #adb5bd;
+  line-height: 1.6;
+}
+
+.privacy-policy strong {
+  color: #495057; /* Darker slate for bold text */
+}
+
+@media (max-width: 992px) {
+  .login-content {
+    flex-direction: column;
+    padding: 1rem 2rem 2rem 2rem;
+    overflow-y: auto; /* Allow scrolling on small screens if cramped */
+  }
+  .login-left {
+    display: none; /* Often hide image on mobile for login */
+  }
+  .page-headline {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  .page-headline h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-content {
+    padding: 1rem;
+  }
+}

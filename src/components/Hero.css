@@ -1,0 +1,83 @@
+.hero-section {
+  width: 100%;
+  padding: 1rem 1rem; /* 1rem gap all around */
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  min-height: 0; /* Important for flex children to shrink */
+}
+
+.hero-container {
+  max-width: var(--max-width);
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius-lg); /* Symmetric radius */
+  padding: 2rem 3rem; /* Same horizontal padding as Stats (3rem) */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically inside hero */
+  text-align: center;
+  height: 100%;
+}
+
+.hero-content {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-icon-wrapper {
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-logo-img {
+  height: 120px; /* Increased from 90px */
+  width: auto;
+  object-fit: contain;
+}
+
+.hero-logo-text {
+  font-weight: 1000;
+  font-size: 1.5rem;
+  color: var(--color-purple-dark);
+  letter-spacing: 4px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.hero-title-dark {
+  display: block;
+}
+
+.hero-description {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+  max-width: 700px;
+  line-height: 1.5;
+}
+
+.btn-large {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 9999px; /* Fully rounded buttons */
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+}

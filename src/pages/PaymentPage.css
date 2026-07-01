@@ -1,0 +1,291 @@
+/* ─── Payment Page Wrapper ─── */
+.payment-page-wrapper {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #f4f6fb;
+}
+
+/* ─── Payment Content ─── */
+.payment-content {
+  width: 100%;
+  padding: 1.5rem 1rem 3rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.payment-layout {
+  max-width: var(--max-width);
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
+}
+
+/* ─── Payment Form Card ─── */
+.payment-form-card {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem 3rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.payment-form-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #12347b;
+  margin-bottom: 0.4rem;
+}
+
+.payment-form-card > p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+/* ─── Payment Methods Tabs ─── */
+.payment-methods {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.method-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  transition: all 0.2s ease;
+}
+
+.method-tab:hover {
+  border-color: #cbd5e1;
+}
+
+.method-tab.active {
+  border-color: #0880d8;
+  background: rgba(8, 128, 216, 0.04);
+  color: #0880d8;
+}
+
+.method-tab svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ─── PayPal Info Banner ─── */
+.paypal-info {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: #1e40af;
+  line-height: 1.4;
+}
+
+.paypal-info svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: #3b82f6;
+}
+
+/* ─── Form Groups (consistent with Login/SignUp forms) ─── */
+.payment-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.payment-form .form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.payment-form label {
+  display: block;
+  font-weight: 600;
+  color: #152238;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.payment-form input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #4b5563;
+  background: white;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.payment-form input:focus {
+  border-color: #3949ab;
+  box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+}
+
+.payment-form input::placeholder {
+  color: #adb5bd;
+}
+
+/* ─── Pay Button ─── */
+.pay-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--gradient-btn);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+
+.pay-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.pay-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Order Summary Card ─── */
+.order-summary-card {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+}
+
+.order-summary-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #12347b;
+  margin-bottom: 1.5rem;
+}
+
+.summary-plan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.summary-plan-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.summary-plan-price {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #12347b;
+}
+
+.summary-plan-price span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* ─── Summary Line Items ─── */
+.summary-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.25rem;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #12347b;
+}
+
+/* ─── Security Badge ─── */
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #f0fdf4;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: #166534;
+  font-weight: 500;
+}
+
+.security-badge svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .payment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary-card {
+    position: static;
+  }
+
+  .payment-form-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .payment-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-methods {
+    flex-direction: column;
+  }
+}

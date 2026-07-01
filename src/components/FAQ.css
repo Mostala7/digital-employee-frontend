@@ -1,0 +1,119 @@
+.faq-section {
+  width: 100%;
+  padding: 0 1rem 1rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.faq-container {
+  max-width: var(--max-width);
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 5rem 3rem; /* Align with other sections */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Keep container aesthetic */
+}
+
+.faq-content {
+  width: 100%;
+  max-width: 800px; /* FAQs naturally look better constrained */
+}
+
+.faq-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #12347b; /* Deep blue title matching design */
+  margin-bottom: 3rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.faq-item:last-child {
+  border-bottom: none; /* No border on the last item for a cleaner look */
+}
+
+.faq-question {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 1.5rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #4b4b6c; /* The muted dark slate from the image */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+
+.faq-question:hover {
+  color: var(--color-purple-dark);
+}
+
+.faq-icon {
+  width: 24px;
+  height: 24px;
+  color: #6c757d;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.faq-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.faq-item.open .faq-icon {
+  transform: rotate(180deg);
+}
+
+.faq-item.open .faq-question {
+  color: #4b4b6c;
+}
+
+/* 
+  Using CSS Grid to animate height from 0 to auto smoothly 
+*/
+.faq-answer-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-out;
+}
+
+.faq-item.open .faq-answer-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.faq-answer {
+  overflow: hidden;
+}
+
+.faq-answer p {
+  padding-bottom: 1.5rem;
+  padding-right: 2rem; /* Add some space so text doesn't hit the arrow */
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #5a5a72; /* Slightly lighter gray for the answer body */
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .faq-container {
+    padding: 3rem 2rem;
+  }
+}

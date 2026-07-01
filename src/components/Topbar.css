@@ -1,0 +1,356 @@
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  margin: 1.5rem; /* The gap between the search bar/sidebar and the topbar itself */
+}
+
+/* This allows the gap the user requested */
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.topbar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--gradient-btn);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin: 0;
+}
+
+.topbar-subtitle {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.topbar-center-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  padding: 0 2rem;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* User Profile Styles */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gradient-btn);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #12347b;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: #f8fafc;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* ─── Modal Styles ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  padding: 2.5rem;
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #12347b;
+  margin-bottom: 0.8rem;
+}
+
+.modal-content p {
+  color: #4a5568;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.modal-cancel-btn {
+  flex: 1;
+  padding: 0.8rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-cancel-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.modal-confirm-btn {
+  flex: 1;
+  padding: 0.8rem;
+  background: #dc2626;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-confirm-btn:hover {
+  background: #b91c1c;
+}
+
+/* ─── Notification Dropdown Styles ─── */
+.notification-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notification-bell-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.notification-bell-btn:hover {
+  background: #e2e8f0;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  height: 20px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Dropdown */
+.notification-dropdown {
+  position: absolute;
+  top: 55px;
+  right: -10px;
+  width: 380px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  z-index: 99999;
+  animation: slideDown 0.2s ease-out;
+  overflow: hidden;
+  text-align: left;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-dropdown-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.notification-dropdown-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.notification-dropdown-body {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+.no-notifications {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.nav-alert-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  background: #f8fafc;
+}
+.nav-alert-card:last-child {
+  margin-bottom: 0;
+}
+
+.nav-alert-card.type-info {
+  background-color: #eff6ff;
+  border-left: 4px solid #3b82f6;
+}
+.nav-alert-card.type-alert {
+  background-color: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+.nav-alert-card.type-success {
+  background-color: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.nav-alert-icon {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+.type-info .nav-alert-icon {
+  color: #3b82f6;
+}
+.type-alert .nav-alert-icon {
+  color: #ef4444;
+}
+.type-success .nav-alert-icon {
+  color: #22c55e;
+}
+
+.nav-alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-alert-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.nav-alert-desc {
+  margin: 0;
+  color: #475569;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}

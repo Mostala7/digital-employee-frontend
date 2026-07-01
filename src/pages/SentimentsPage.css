@@ -1,0 +1,113 @@
+.sentiments-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  margin-top: 0;
+}
+
+.sentiments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.sentiment-filters {
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.filter-btn {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+  background-color: #ffffff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.filter-btn:hover:not(.active) {
+  color: #475569;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.sentiments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sentiments-table th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #fafbfc;
+}
+
+.sentiments-table th:first-child {
+  padding-left: 0;
+}
+
+.sentiments-table td {
+  padding: 1.2rem 1.5rem;
+  font-size: 0.875rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.sentiments-table td:first-child {
+  padding-left: 0;
+}
+
+.sentiment-row {
+  transition: background-color 0.2s;
+}
+
+.sentiment-row:hover {
+  background-color: #f8fafc;
+}
+
+/* Badges */
+.sentiment-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-satisfied {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.badge-angry {
+  background-color: #fee2e2;
+  color: #dc2626;
+}

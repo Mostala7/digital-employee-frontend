@@ -1,0 +1,112 @@
+.ai-features-section {
+  width: 100%;
+  padding: 0 1rem 1rem 1rem;
+  margin-bottom: 2rem; /* Creates the physical gap before Pricing */
+  display: flex;
+  justify-content: center;
+  /* Use cover to make the provided background fit the section nicely */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Dark color fallback */
+  background-color: #0b071e;
+}
+
+.ai-features-container {
+  max-width: var(--max-width);
+  width: 100%;
+  border-radius: var(--border-radius-lg);
+  padding: 4rem 3rem; /* Same horizontal padding as other main sections */
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ai-features-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  margin-bottom: 4rem;
+  line-height: 1.3;
+}
+
+.ai-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.ai-feature-card {
+  /* Semi-transparent dark background for the cards based on the image */
+  background: rgba(16, 12, 38, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Thin white/grey outline */
+  border-radius: var(--border-radius-md);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+
+.ai-feature-card:hover {
+  transform: translateY(-5px);
+  background: rgba(16, 12, 38, 0.6);
+}
+
+/* Modifying the global icon circle locally just to match the new gradient */
+.ai-feature-card .icon-circle {
+  background: linear-gradient(135deg, #182363 0%, #660399 100%);
+  border: none; /* No white border in this particular design */
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1.25rem;
+}
+
+.ai-feature-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.ai-feature-card p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  flex: 1; /* Pushes the 'learn more' link to the bottom */
+}
+
+.learn-more-link {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s;
+}
+
+.learn-more-link:hover {
+  color: white;
+}
+
+@media (max-width: 900px) {
+  .ai-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .ai-features-grid {
+    grid-template-columns: 1fr;
+  }
+}

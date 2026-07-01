@@ -1,0 +1,76 @@
+/* Ticket Priority Tags */
+.tag-priority-critical {
+  background: #7f1d1d;
+  color: #fef2f2;
+}
+
+.tag-priority-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tag-priority-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tag-priority-low {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Assigned state tags */
+.tag-unassigned {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
+  padding: 0.15rem 0.55rem; /* align correctly with borders */
+}
+
+/* Ticket Status Tags */
+.tag-status-open {
+  background: #e0e7ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+.tag-status-inprogress {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.tag-status-closed {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+/* Table Sort Styles */
+.sort-clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.sort-clickable:hover {
+  color: #1e293b; 
+}
+
+.sort-active {
+  cursor: pointer;
+  user-select: none;
+  color: #6366f1;
+  background-color: #eff6ff;
+}
+
+.sort-active .sort-icon {
+  color: #6366f1;
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 0.25rem;
+  font-size: 0.8rem;
+  color: #94a3b8; 
+}

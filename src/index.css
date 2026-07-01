@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+:root {
+  /* Color Palette based on design */
+  --color-primary: #0880d8;
+  --color-purple: #660399;
+  --color-purple-dark: #152238; /* Based on the dark cards */
+  --color-text-dark: #111827;
+  --color-text-muted: #6b7280;
+  --color-bg-light: #f4f7fb;
+
+  /* Gradients */
+  --gradient-btn: linear-gradient(90deg, #0880d8 0%, #660399 100%);
+  --gradient-dark-card: linear-gradient(135deg, #1a1f35 0%, #0b1120 100%);
+  --gradient-card-horiz: linear-gradient(
+    90deg,
+    #000000 0%,
+    #000000 45%,
+    #660399 100%
+  );
+  --gradient-card-vert: linear-gradient(
+    180deg,
+    #660398 0%,
+    #000000 45%,
+    #000000 100%
+  );
+
+  /* Spacing & Layout */
+  --max-width: 1200px;
+
+  /* Borders */
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-bg-light);
+  color: var(--color-text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base button styles to be reused */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--gradient-btn);
+  color: white;
+  padding: 0.6rem 1.5rem;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Reusable Icon Circle */
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.icon-circle svg {
+  color: white;
+  width: 24px;
+  height: 24px;
+}
+
+/* ─── Global Application Layout (Authenticated Pages) ─── */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: #f4f6fb;
+  overflow: hidden;
+}
+
+.main-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.page-content {
+  flex: 1;
+  padding: 2rem;
+}
