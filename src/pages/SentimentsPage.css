@@ -111,3 +111,13 @@
   background-color: #fee2e2;
   color: #dc2626;
 }
+
+@media (max-width: 1440px) {
+  .sentiments-container {
+    padding: 1rem;
+  }
+  .sentiments-table th,
+  .sentiments-table td {
+    padding: 0.85rem 1rem;
+  }
+}

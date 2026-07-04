@@ -100,7 +100,7 @@ const ReportsTabContent = () => {
           await apiClient.post("/api/Notification", {
             title: "AI Report Ready",
             message: `Analytics report generated successfully for ${selectedType} period.`,
-            userId: currentUser?.id || "owner",
+            userId: currentUser?.id || null,
             businessId: businessId
           });
         } catch (e) {

@@ -76,6 +76,8 @@ const TicketPage = () => {
         resolutionNotes: noteContent || ""
       });
       
+      let newAssignedTo = ticket.assignedTo;
+
       // Assign the ticket to the current user only if unassigned and not being closed
       if (currentUser && ticket.assignedTo === "Unassigned" && ticketStatus !== "Closed") {
          try {
@@ -83,6 +85,7 @@ const TicketPage = () => {
                ticketId: idToUse,
                userId: currentUser.id || currentUser.userId
             });
+            newAssignedTo = currentUser.fullName || currentUser.name || "Owner";
          } catch (e) {
             console.log("Assignment silently failed or already assigned", e.response?.data);
          }
@@ -96,7 +99,7 @@ const TicketPage = () => {
         ...ticket,
         status: ticketStatus,
         resolutionNotes: noteContent,
-        assignedTo: currentUser?.fullName || ticket.assignedTo,
+        assignedTo: newAssignedTo,
         updatedAt: new Date().toISOString(),
       };
       
@@ -212,7 +215,7 @@ const TicketPage = () => {
                 <div className="meta-row">
                   <span className="meta-label">Last Updated</span>
                   <span className="meta-value meta-muted">
-                    {new Date(ticket.updatedAt).toLocaleString("en-GB", {
+                    {new Date(ticket.updatedAt || ticket.closedAt || ticket.createdAt).toLocaleString("en-GB", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}

@@ -17,6 +17,7 @@ import "./TicketsPage.css";
 import "./CustomersPage.css";
 
 import apiClient from "../api/apiClient";
+import { useAuth } from "../contexts/AuthContext";
 
 
 const LOYALTY_TIERS = ["New", "Regular", "VIP"];
@@ -35,6 +36,7 @@ const formatDate = (isoString) => {
 
 /* ─── Component ─────────────────────────────────────────────────── */
 const CustomersPage = () => {
+  const { currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilter, setShowFilter] = useState(false);
   const [filterLoyalty, setFilterLoyalty] = useState([]);
@@ -64,7 +66,9 @@ const CustomersPage = () => {
     const fetchCustomers = async () => {
       setIsLoading(true);
       try {
-        const response = await apiClient.get('/api/Customer');
+        const bizId = currentUser?.businessId;
+        const url = bizId ? `/api/Customer/business/${bizId}` : '/api/Customer';
+        const response = await apiClient.get(url);
         const data = response.data || [];
         
         const mappedCustomers = data.map(c => {

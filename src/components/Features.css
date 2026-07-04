@@ -3,7 +3,8 @@
   padding: 0 1rem 1rem 1rem; /* 0 top padding, relies on Stats bottom padding for the 1rem gap */
   display: flex;
   justify-content: center;
-  height: 100vh; /* Next full viewport height */
+  min-height: 100vh;
+  height: auto;
 }
 
 .features-container {
@@ -58,6 +59,26 @@
     --border-radius-md
   ); /* Add a slight radius so they look polished */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Add consistency with a shadow */
+}
+
+@media (max-width: 1440px) {
+  .features-container {
+    padding: 2.5rem 2rem;
+    gap: 1.5rem;
+  }
+  .feature-row {
+    gap: 2.5rem;
+  }
+  .feature-text h2 {
+    font-size: 1.85rem;
+    margin-bottom: 0.75rem;
+  }
+  .feature-text p {
+    font-size: 1rem;
+  }
+  .feature-image img {
+    height: 30vh;
+  }
 }
 
 @media (max-width: 900px) {

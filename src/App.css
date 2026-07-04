@@ -7,7 +7,8 @@
 }
 
 .first-viewport {
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -48,5 +49,4 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  overflow: hidden;
 }

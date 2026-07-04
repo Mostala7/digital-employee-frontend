@@ -235,3 +235,21 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 1440px) {
+  .settings-container {
+    padding: 1rem;
+  }
+  .settings-card {
+    padding: 1.5rem;
+  }
+  .settings-form-row {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-form-row {
+    grid-template-columns: 1fr;
+  }
+}

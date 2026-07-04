@@ -50,7 +50,8 @@ const UI_CHART_COLORS = {
 };
 
 const formatCurrency = (amount) => {
-  return amount >= 1000 ? `$${Math.round(amount / 1000)}k` : `$${amount}`;
+  const num = Number(amount || 0);
+  return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -80,6 +81,8 @@ const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [interactionsData, setInteractionsData] = useState([]);
   const [ordersData, setOrdersData] = useState([]);
+  const [ticketsData, setTicketsData] = useState([]);
+  const [customersData, setCustomersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -93,16 +96,20 @@ const DashboardPage = () => {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        const [dashData, interData, ordData] = await Promise.all([
+        const [dashData, interData, ordData, tktData, custData] = await Promise.all([
           fetchDashboardOverview(revenuePeriod),
           currentUser?.businessId ? fetchBusinessInteractions(currentUser.businessId) : Promise.resolve([]),
-          currentUser?.businessId ? apiClient.get(`/api/Order/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([])
+          currentUser?.businessId ? apiClient.get(`/api/Order/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([]),
+          currentUser?.businessId ? apiClient.get(`/api/Ticket/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([]),
+          currentUser?.businessId ? apiClient.get(`/api/Customer/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([])
         ]);
 
         if (isMounted) {
           setDashboardData(dashData);
           setInteractionsData(interData || []);
           setOrdersData(ordData || []);
+          setTicketsData(tktData || []);
+          setCustomersData(custData || []);
           setError(null);
         }
       } catch (err) {
@@ -133,6 +140,24 @@ const DashboardPage = () => {
   }, [dashboardData]);
 
   const sentimentData = useMemo(() => {
+    if (interactionsData && interactionsData.length > 0) {
+      let satisfied = 0, neutral = 0, angry = 0;
+      interactionsData.forEach(inter => {
+        const txt = (inter.summary || inter.transcript || inter.lastMessage || "").toLowerCase();
+        if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
+          angry++;
+        } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
+          neutral++;
+        } else {
+          satisfied++;
+        }
+      });
+      return [
+        { name: "Satisfied", value: satisfied },
+        { name: "Neutral", value: neutral },
+        { name: "Angry", value: angry },
+      ];
+    }
     if (!dashboardData?.sentimentAnalysis) return [];
     const sa = dashboardData.sentimentAnalysis;
     return [
@@ -140,23 +165,136 @@ const DashboardPage = () => {
       { name: "Neutral", value: sa.neutral },
       { name: "Angry", value: sa.angry },
     ];
-  }, [dashboardData]);
+  }, [interactionsData, dashboardData]);
 
   const sentimentScore = useMemo(() => {
-    if (!dashboardData?.sentimentAnalysis) return "0.0";
-    const sa = dashboardData.sentimentAnalysis;
-    const total = sa.total || 1;
-    const score = ((sa.satisfied * 10) + (sa.neutral * 5) + (sa.angry * 1)) / total;
-    return score.toFixed(1);
-  }, [dashboardData]);
+    let satisfied = 0, neutral = 0, angry = 0;
+    
+    if (interactionsData && interactionsData.length > 0) {
+      interactionsData.forEach(inter => {
+        const txt = (inter.summary || inter.transcript || inter.lastMessage || "").toLowerCase();
+        if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
+          angry++;
+        } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
+          neutral++;
+        } else {
+          satisfied++;
+        }
+      });
+    } else if (dashboardData?.sentimentAnalysis) {
+      satisfied = dashboardData.sentimentAnalysis.satisfied;
+      neutral = dashboardData.sentimentAnalysis.neutral;
+      angry = dashboardData.sentimentAnalysis.angry;
+    }
 
+    const actualTotal = satisfied + neutral + angry;
+    if (actualTotal === 0) return "0.0";
+    
+    // Scale: Satisfied=10, Neutral=5, Angry=1
+    const score = ((satisfied * 10) + (neutral * 5) + (angry * 1)) / actualTotal;
+    return score.toFixed(1);
+  }, [interactionsData, dashboardData]);
+
+  const calculatedTotalRevenue = useMemo(() => {
+    if (ordersData && ordersData.length > 0) {
+      const validOrders = ordersData.filter(o => !String(o.status || "").toLowerCase().includes("canc"));
+      return validOrders.reduce((acc, ord) => acc + Number(ord.totalPrice || ord.totalAmount || ord.amount || 0), 0);
+    }
+    return insights.totalRevenue?.value || 0;
+  }, [ordersData, insights]);
+
+  const calculatedAvgOrderValue = useMemo(() => {
+    if (ordersData && ordersData.length > 0) {
+      const validOrders = ordersData.filter(o => !String(o.status || "").toLowerCase().includes("canc"));
+      if (validOrders.length > 0) {
+        const total = validOrders.reduce((acc, ord) => acc + Number(ord.totalPrice || ord.totalAmount || ord.amount || 0), 0);
+        return (total / validOrders.length).toFixed(2);
+      }
+    }
+    return (insights.avgOrderValue?.value || 0).toFixed(2);
+  }, [ordersData, insights]);
+
+  const calculatedTotalInteractions = useMemo(() => {
+    if (interactionsData && interactionsData.length > 0) {
+      return Math.max(interactionsData.length, insights.totalInteractions?.value || 0);
+    }
+    return insights.totalInteractions?.value || 0;
+  }, [interactionsData, insights]);
+
+  const calculatedAvgResolutionHours = useMemo(() => {
+    if (interactionsData && interactionsData.length > 0) {
+      const resolved = interactionsData.filter(i => i.endedAt && i.startedAt && (i.status === "Resolved" || i.status === "Completed"));
+      if (resolved.length > 0) {
+        const totalHours = resolved.reduce((acc, i) => {
+          const diffMs = new Date(i.endedAt) - new Date(i.startedAt);
+          return acc + Math.max(0, diffMs / (1000 * 60 * 60));
+        }, 0);
+        const avg = totalHours / resolved.length;
+        if (avg > 0) return avg.toFixed(1);
+      }
+    }
+    return insights.avgResolutionTimeHours?.value ? insights.avgResolutionTimeHours.value.toFixed(1) : "N/A";
+  }, [interactionsData, insights]);
+
+  const calculatedNewCustomers = useMemo(() => {
+    if (customersData && customersData.length > 0) {
+      return Math.max(customersData.length, insights.newCustomers?.value || 0);
+    }
+    return insights.newCustomers?.value || 0;
+  }, [customersData, insights]);
+
+  const calculatedOpenTickets = useMemo(() => {
+    if (ticketsData && ticketsData.length > 0) {
+      const open = ticketsData.filter(t => {
+        const st = String(t.status || "").toLowerCase();
+        return st === "open" || st === "in progress" || st === "pending" || st === "escalated" || st === "active";
+      });
+      return open.length;
+    }
+    return insights.openTickets?.value || 0;
+  }, [ticketsData, insights]);
+
+  // Generate revenue trend by manually grouping fetched orders
   const revenueData = useMemo(() => {
-    if (!dashboardData?.revenueTrend) return [];
-    return dashboardData.revenueTrend.map(t => ({
-      name: t.label,
-      value: t.revenue
+    if (!ordersData || ordersData.length === 0) {
+      if (!dashboardData?.revenueTrend) return [];
+      return dashboardData.revenueTrend.map(t => ({
+        name: t.label,
+        value: t.revenue
+      }));
+    }
+
+    const days = revenuePeriod === "7d" ? 7 : 30;
+    const now = new Date();
+    const fromDate = new Date(now);
+    fromDate.setDate(now.getDate() - days);
+
+    const filtered = ordersData.filter(o => {
+      const d = new Date(o.createdAt || o.orderDate || o.date || Date.now());
+      return d >= fromDate && !String(o.status || "").toLowerCase().includes("canc");
+    });
+
+    const buckets = {};
+    for (let i = 0; i <= days; i++) {
+      const d = new Date(fromDate);
+      d.setDate(d.getDate() + i);
+      const key = `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      buckets[key] = 0;
+    }
+
+    filtered.forEach(ord => {
+      const d = new Date(ord.createdAt || ord.orderDate || ord.date || Date.now());
+      const key = `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      if (buckets[key] !== undefined) {
+        buckets[key] += Number(ord.totalPrice || ord.totalAmount || ord.amount || 0);
+      }
+    });
+
+    return Object.keys(buckets).map(key => ({
+      name: key,
+      value: Number(buckets[key].toFixed(2))
     }));
-  }, [dashboardData]);
+  }, [ordersData, dashboardData, revenuePeriod]);
 
   // Generate interaction trend by manually grouping fetched interactions
   const interactionTrendData = useMemo(() => {
@@ -213,6 +351,17 @@ const DashboardPage = () => {
     }
     return sortableItems;
   }, [dashboardData, sortConfig]);
+
+  const sortedOrders = useMemo(() => {
+    const list = ordersData && ordersData.length > 0 ? [...ordersData] : [
+      { orderId: "ORD-1089", customerName: "Ahmed Ali", totalPrice: 42.50, status: "Completed", createdAt: new Date(Date.now() - 1000 * 60 * 15), items: [{ menuItemName: "Classic Beef Burger", quantity: 2 }, { menuItemName: "Fries", quantity: 1 }] },
+      { orderId: "ORD-1088", customerName: "Sara Mansour", totalPrice: 68.00, status: "Delivered", createdAt: new Date(Date.now() - 1000 * 60 * 45), items: [{ menuItemName: "Crispy Chicken Combo", quantity: 2 }] },
+      { orderId: "ORD-1087", customerName: "Karim Hassan", totalPrice: 19.99, status: "Pending", createdAt: new Date(Date.now() - 1000 * 60 * 110), items: [{ menuItemName: "Chocolate Shake", quantity: 2 }] },
+      { orderId: "ORD-1086", customerName: "Mona Zaki", totalPrice: 85.00, status: "Completed", createdAt: new Date(Date.now() - 1000 * 60 * 240), items: [{ menuItemName: "Family Burger Meal", quantity: 1 }] },
+      { orderId: "ORD-1085", customerName: "Tarek Omar", totalPrice: 31.00, status: "Cancelled", createdAt: new Date(Date.now() - 1000 * 60 * 320), items: [{ menuItemName: "Spicy Wings Pack", quantity: 1 }] }
+    ];
+    return list.sort((a, b) => new Date(b.createdAt || b.orderDate || b.date || 0) - new Date(a.createdAt || a.orderDate || a.date || 0));
+  }, [ordersData]);
 
   const requestSort = (key) => {
     let direction = "asc";
@@ -291,7 +440,7 @@ const DashboardPage = () => {
                   <BarChart3 size={16} />
                 </div>
                 <h3 className="value-text">
-                  {formatCurrency(insights.totalRevenue?.value || 0)}
+                  {formatCurrency(calculatedTotalRevenue)}
                 </h3>
                 <span className="label">Total Revenue</span>
                 <span className="trend">
@@ -304,7 +453,7 @@ const DashboardPage = () => {
                   <Clock size={16} />
                 </div>
                 <h3 className="value-text">
-                  {insights.avgResolutionTimeHours?.value ? `${insights.avgResolutionTimeHours.value.toFixed(1)}h` : "N/A"}
+                  {calculatedAvgResolutionHours === "N/A" ? "N/A" : `${calculatedAvgResolutionHours}h`}
                 </h3>
                 <span className="label">Resolution Time</span>
                 <span className="trend">
@@ -317,7 +466,7 @@ const DashboardPage = () => {
                   <MessageSquare size={16} />
                 </div>
                 <h3 className="value-text">
-                  {(insights.totalInteractions?.value || 0).toLocaleString()}
+                  {calculatedTotalInteractions.toLocaleString()}
                 </h3>
                 <span className="label">Total Interactions</span>
                 <span className="trend">
@@ -330,7 +479,7 @@ const DashboardPage = () => {
                   <DollarSign size={16} />
                 </div>
                 <h3 className="value-text">
-                  ${(insights.avgOrderValue?.value || 0).toFixed(2)}
+                  ${calculatedAvgOrderValue}
                 </h3>
                 <span className="label">Average Order Value</span>
                 <span className="trend">
@@ -343,7 +492,7 @@ const DashboardPage = () => {
                   <Users size={16} />
                 </div>
                 <h3 className="value-text">
-                  {insights.newCustomers?.value || 0}
+                  {calculatedNewCustomers}
                 </h3>
                 <span className="label">New Customers (30d)</span>
                 <span className="trend">
@@ -356,7 +505,7 @@ const DashboardPage = () => {
                   <User size={16} />
                 </div>
                 <h3 className="value-text">
-                  {insights.openTickets?.value || 0}
+                  {calculatedOpenTickets}
                 </h3>
                 <span className="label">Open Tickets</span>
                 <span className="trend">
@@ -658,13 +807,7 @@ const DashboardPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(ordersData && ordersData.length > 0 ? ordersData : [
-                      { orderId: "ORD-1089", customerName: "Ahmed Ali", totalPrice: 42.50, status: "Completed", createdAt: new Date(Date.now() - 1000 * 60 * 15), items: [{ menuItemName: "Classic Beef Burger", quantity: 2 }, { menuItemName: "Fries", quantity: 1 }] },
-                      { orderId: "ORD-1088", customerName: "Sara Mansour", totalPrice: 68.00, status: "Delivered", createdAt: new Date(Date.now() - 1000 * 60 * 45), items: [{ menuItemName: "Crispy Chicken Combo", quantity: 2 }] },
-                      { orderId: "ORD-1087", customerName: "Karim Hassan", totalPrice: 19.99, status: "Pending", createdAt: new Date(Date.now() - 1000 * 60 * 110), items: [{ menuItemName: "Chocolate Shake", quantity: 2 }] },
-                      { orderId: "ORD-1086", customerName: "Mona Zaki", totalPrice: 85.00, status: "Completed", createdAt: new Date(Date.now() - 1000 * 60 * 240), items: [{ menuItemName: "Family Burger Meal", quantity: 1 }] },
-                      { orderId: "ORD-1085", customerName: "Tarek Omar", totalPrice: 31.00, status: "Cancelled", createdAt: new Date(Date.now() - 1000 * 60 * 320), items: [{ menuItemName: "Spicy Wings Pack", quantity: 1 }] }
-                    ]).map((order, idx) => {
+                    {sortedOrders.map((order, idx) => {
                       const statusStr = (order.status || "Pending").toLowerCase();
                       let badgeStyle = { background: "#fef08a", color: "#854d0e" };
                       if (statusStr.includes("comp") || statusStr.includes("deliv")) {

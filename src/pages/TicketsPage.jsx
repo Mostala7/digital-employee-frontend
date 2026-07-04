@@ -11,6 +11,8 @@ import {
   Ticket,
   Clock,
   CheckCircle,
+  AlertCircle,
+  AlertTriangle,
   XCircle,
 } from "lucide-react";
 import { startOfDay } from "date-fns";
@@ -19,6 +21,7 @@ import "./TicketsPage.css"; // Add specific ticket colors
 import "./CustomersPage.css"; // Important: ensure we can pull "cust-dark-card" definitions
 
 import apiClient from "../api/apiClient";
+import { useAuth } from "../contexts/AuthContext";
 
 const formatDateTime = (isoString) => {
   const d = new Date(isoString);
@@ -30,9 +33,10 @@ const formatDateTime = (isoString) => {
 
 const PRIORITIES = ["Critical", "High", "Medium", "Low"];
 const TYPES = ["Complaint", "Order Issue", "Billing", "Technical", "Inquiry"];
-const STATUSES = ["In Progress", "Resolved", "Failed"];
+const STATUSES = ["Open", "InProgress", "Closed"];
 
 const TicketsPage = () => {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilter, setShowFilter] = useState(false);
@@ -64,16 +68,14 @@ const TicketsPage = () => {
     const fetchTickets = async () => {
       setIsLoading(true);
       try {
-        // Attempt to fetch all tickets
-        const response = await apiClient.get('/api/Ticket');
+        const bizId = currentUser?.businessId;
+        const url = bizId ? `/api/Ticket/business/${bizId}` : '/api/Ticket';
+        const response = await apiClient.get(url);
         const data = response.data || [];
         
         // Map backend properties to the UI's expected structure if they differ
         const mappedTickets = data.map(t => {
-          let st = t.status || "In Progress";
-          if (st === "InProgress" || st === "Open") st = "In Progress";
-          else if (st === "Closed") st = "Resolved";
-          else if (st === "Escalated") st = "Failed";
+          const st = t.status || "Open";
 
           return {
             ...t,
@@ -146,17 +148,16 @@ const TicketsPage = () => {
 
   const stats = {
     total: statFilteredTickets.length,
-    inProgress: statFilteredTickets.filter((t) => t.status === "In Progress")
-      .length,
-    resolved: statFilteredTickets.filter((t) => t.status === "Resolved").length,
-    failed: statFilteredTickets.filter((t) => t.status === "Failed").length,
+    open: statFilteredTickets.filter((t) => t.status === "Open").length,
+    inProgress: statFilteredTickets.filter((t) => t.status === "InProgress").length,
+    closed: statFilteredTickets.filter((t) => t.status === "Closed").length,
   };
 
   const STAT_CARDS = [
     { label: "Total Tickets", value: stats.total, Icon: Ticket },
-    { label: "In Progress", value: stats.inProgress, Icon: Clock },
-    { label: "Resolved", value: stats.resolved, Icon: CheckCircle },
-    { label: "Failed", value: stats.failed, Icon: XCircle },
+    { label: "Open", value: stats.open, Icon: AlertCircle },
+    { label: "InProgress", value: stats.inProgress, Icon: Clock },
+    { label: "Closed", value: stats.closed, Icon: CheckCircle },
   ];
 
   const requestSort = (key) => {
@@ -177,7 +178,7 @@ const TicketsPage = () => {
   };
 
   const PRIORITY_WT = { Critical: 4, High: 3, Medium: 2, Low: 1 };
-  const STATUS_WT = { Failed: 3, "In Progress": 2, Resolved: 1 };
+  const STATUS_WT = { Open: 3, InProgress: 2, Closed: 1 };
 
   const sortedTickets = [...filteredTickets].sort((a, b) => {
     if (!sortConfig.key) return 0;
@@ -349,7 +350,7 @@ const TicketsPage = () => {
 
         <main className="dashboard-content-wrapper">
           <div className="cust-stat-section">
-            <div className="cust-stat-grid">
+            <div className="tickets-stat-grid">
               {STAT_CARDS.map(({ label, value, Icon }) => (
                 <div className="cust-dark-card" key={label}>
                   <div className="cust-dark-icon">

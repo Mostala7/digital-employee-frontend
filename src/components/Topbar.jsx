@@ -18,9 +18,10 @@ const Topbar = ({
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [liveNotifications, setLiveNotifications] = useState([]);
+  const [readIds, setReadIds] = useState(new Set());
   const notificationRef = useRef(null);
 
-  // Fetch real backend notifications
+  // Fetch real backend notifications with background polling
   useEffect(() => {
     if (!currentUser?.businessId) return;
     const fetchNotifications = async () => {
@@ -34,6 +35,8 @@ const Topbar = ({
       }
     };
     fetchNotifications();
+    const intervalId = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(intervalId);
   }, [currentUser?.businessId]);
 
   // Listen for real-time report readiness notifications
@@ -65,7 +68,7 @@ const Topbar = ({
     const id = item.id || item.notificationId || `notif-${idx}`;
     const title = item.title || item.type || item.category || "System Alert";
     const desc = item.description || item.message || item.content || "New activity detected on your account.";
-    const isRead = item.isRead || false;
+    const isRead = item.isRead || readIds.has(id) || false;
     
     // Check all severity and priority attributes for unified color assignment
     const sevString = `${item.severity || ""} ${item.category || ""} ${item.priority || ""} ${item.type || ""} ${title}`.toLowerCase();
@@ -94,14 +97,34 @@ const Topbar = ({
   };
 
   const handleMarkItemRead = async (item) => {
-    if (item.notificationId) {
+    setReadIds(prev => new Set([...prev, item.id]));
+    const idToMark = item.notificationId || (item.id && !item.id.toString().startsWith("sys-") && !item.id.toString().startsWith("notif") ? item.id : null);
+    if (idToMark) {
       try {
-        await apiClient.put(`/api/Notification/${item.notificationId}/read`);
-        setLiveNotifications(prev => prev.map(n => n.notificationId === item.notificationId ? { ...n, isRead: true } : n));
+        await apiClient.put(`/api/Notification/${idToMark}/read`);
       } catch (err) {
         console.error("Failed to mark read:", err);
       }
     }
+    setLiveNotifications(prev => prev.map(n => (n.notificationId === item.id || n.id === item.id || n.notificationId === item.notificationId) ? { ...n, isRead: true } : n));
+  };
+
+  const handleMarkAllRead = async (e) => {
+    if (e) e.stopPropagation();
+    setReadIds(new Set(processedList.map(n => n.id)));
+    const unreadItems = liveNotifications.filter(n => !n.isRead);
+    setLiveNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    for (const item of unreadItems) {
+      const idToMark = item.notificationId || (item.id && !item.id.toString().startsWith("sys-") && !item.id.toString().startsWith("notif") ? item.id : null);
+      if (idToMark) {
+        try {
+          await apiClient.put(`/api/Notification/${idToMark}/read`);
+        } catch (err) {
+          console.error("Failed to mark read:", err);
+        }
+      }
+    }
+    if (onMarkAllAsRead) onMarkAllAsRead();
   };
 
   useEffect(() => {
@@ -169,9 +192,27 @@ const Topbar = ({
               <div className="notification-dropdown">
                 <div className="notification-dropdown-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <h3>Notifications</h3>
-                  <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>
-                    {unreadCount} unread
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>
+                      {unreadCount} unread
+                    </span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#3b82f6",
+                          fontSize: "0.75rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          padding: 0
+                        }}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="notification-dropdown-body">
                   {processedList.map((alert) => (

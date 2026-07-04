@@ -76,8 +76,41 @@
   border-radius: 9999px; /* Fully rounded buttons */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1440px) {
+  .hero-container {
+    padding: 1.5rem 2rem;
+  }
+  .hero-logo-img {
+    height: 90px;
+  }
   .hero-title {
     font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .hero-description {
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (max-height: 850px) {
+  .hero-container {
+    padding: 1.25rem 2rem;
+  }
+  .hero-logo-img {
+    height: 80px;
+  }
+  .hero-title {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .hero-description {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.25rem;
   }
 }

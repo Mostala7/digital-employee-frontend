@@ -357,3 +357,29 @@
   background-color: #cbd5e1;
   cursor: not-allowed;
 }
+
+@media (max-width: 1440px) {
+  .conversation-grid {
+    grid-template-columns: 260px 1fr;
+    gap: 1rem;
+    min-height: calc(100vh - 110px);
+  }
+  .conv-meta-panel,
+  .conv-order-card,
+  .conv-history-card,
+  .chat-panel-inner {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .conversation-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    min-height: auto;
+  }
+  .conv-meta-panel    { grid-column: 1; grid-row: 1; }
+  .conv-chat-panel    { grid-column: 1; grid-row: 2; height: 500px; }
+  .conv-order-card    { grid-column: 1; grid-row: 3; }
+  .conv-history-card  { grid-column: 1; grid-row: 4; }
+}

@@ -96,6 +96,27 @@ const CallPage = () => {
           );
         }
 
+        // 5. Fetch Related Order
+        let fetchedOrder = null;
+        try {
+          let allOrders = [];
+          if (actualBusinessId) {
+            const ordRes = await apiClient.get(`/api/Order/business/${actualBusinessId}`).catch(() => ({ data: [] }));
+            allOrders = ordRes.data || [];
+          }
+          if (allOrders.length === 0 && actualCustomerId) {
+            const ordRes = await apiClient.get(`/api/Order/customer/${actualCustomerId}`).catch(() => ({ data: [] }));
+            allOrders = ordRes.data || [];
+          }
+          fetchedOrder = allOrders.find(o => 
+            (o.interactionId || o.InteractionId) === decodedId || 
+            (o.interactionId || o.InteractionId) === (intData?.interactionId || intData?.id || sumData?.interactionId) ||
+            String(o.customerId || o.CustomerId) === String(actualCustomerId)
+          );
+        } catch (e) {
+          console.warn("Failed to fetch related order:", e);
+        }
+
         setInteraction({
           ...(intData || {}),
           interactionId: intData?.interactionId || intData?.id || sumData?.interactionId || sumData?.callId || decodedId,
@@ -129,7 +150,16 @@ const CallPage = () => {
             status: fetchedTicket.status || "Open",
             assignedTo: fetchedTicket.assignedAgentName || "Unassigned",
             createdAt: fetchedTicket.createdAt || new Date().toISOString()
-          } : null
+          } : null,
+          relatedOrder: intData?.relatedOrder || (fetchedOrder ? {
+            orderId: fetchedOrder.orderId || fetchedOrder.id || "ORD-" + Math.floor(1000 + Math.random() * 9000),
+            status: fetchedOrder.status || "Completed",
+            items: fetchedOrder.items && fetchedOrder.items.length > 0 ? fetchedOrder.items.map(i => ({
+              name: i.menuItemName || i.name || "Item",
+              qty: i.quantity || i.qty || 1,
+              price: Number(i.price || i.unitPrice || 0) || (Number(fetchedOrder.totalPrice || fetchedOrder.totalAmount || 0) / (i.quantity || 1))
+            })) : [{ name: "Order Items", qty: 1, price: Number(fetchedOrder.totalPrice || fetchedOrder.totalAmount || 0) }]
+          } : null),
         });
       } catch (error) {
         console.error("Failed to load call page data:", error);
@@ -380,44 +410,8 @@ const CallPage = () => {
                   </div>
                 </div>
 
-                {/* ── CELL 3 · Order Summary + Ticket ── */}
+                {/* ── CELL 3 · Support Ticket ── */}
                 <div className="conv-order-card chart-card">
-                  <h3 className="chart-title" style={{ fontSize: "0.9rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <ShoppingBag size={15} /> Order Summary
-                    {interaction?.relatedOrder && (
-                      <span className={`log-tag ${interaction.relatedOrder.status === "Delivered" ? "tag-status-resolved" : "tag-status-active"}`} style={{ marginLeft: "auto", fontSize: "0.7rem" }}>
-                        {interaction.relatedOrder.status}
-                      </span>
-                    )}
-                  </h3>
-
-                  {interaction?.relatedOrder ? (
-                    <>
-                      <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginBottom: "0.75rem" }}>
-                        {interaction.relatedOrder.orderId}
-                      </p>
-                      <div className="order-items-list">
-                        {interaction.relatedOrder.items.map((item, i) => (
-                          <div key={i} className="order-item-row">
-                            <span className="order-item-name">{item.qty}× {item.name}</span>
-                            <span className="order-item-price">${(item.price * item.qty).toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="order-total-row">
-                        <span>Total</span>
-                        <span>${calcTotal(interaction.relatedOrder.items)}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="empty-state-panel">
-                      <ShoppingBag size={20} className="empty-state-icon" />
-                      <span className="empty-state-text">No order placed</span>
-                    </div>
-                  )}
-
-                  <div className="meta-divider" style={{ margin: "1.25rem 0" }} />
-
                   <h3 className="chart-title" style={{ fontSize: "0.9rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "6px" }}>
                     <AlertCircle size={15} /> Support Ticket
                     {interaction?.relatedTicket && (

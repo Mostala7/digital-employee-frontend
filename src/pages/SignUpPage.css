@@ -1,8 +1,9 @@
 .login-page-wrapper {
   background-color: white;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -316,6 +317,50 @@
 
 .privacy-policy strong {
   color: #495057; /* Darker slate for bold text */
+}
+
+@media (max-width: 1440px) {
+  .login-content {
+    gap: 2rem;
+    padding: 1rem 2rem;
+  }
+  .login-left {
+    padding: 1rem;
+  }
+  .login-logo {
+    margin-bottom: 1.25rem;
+  }
+  .auth-toggle {
+    margin-bottom: 1.25rem;
+  }
+  .form-group {
+    margin-bottom: 1.1rem;
+  }
+  .social-login {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-height: 850px) {
+  .login-content {
+    padding: 0.75rem 2rem 2rem 2rem;
+    gap: 2rem;
+  }
+  .login-logo {
+    margin-bottom: 1rem;
+  }
+  .auth-toggle {
+    margin-bottom: 1rem;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .divider-container {
+    margin: 1.25rem 0;
+  }
+  .social-login {
+    margin-bottom: 1.25rem;
+  }
 }
 
 @media (max-width: 992px) {

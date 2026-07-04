@@ -82,7 +82,7 @@ const SentimentsPage = () => {
         const [sentRes, custRes, interRes] = await Promise.all([
           currentUser?.businessId ? apiClient.get(`/api/Sentiment/business/${currentUser.businessId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
           currentUser?.businessId ? apiClient.get(`/api/Customer/business/${currentUser.businessId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
-          currentUser?.businessId ? apiClient.get(`/api/interactions/business/${currentUser.businessId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
+          currentUser?.businessId ? apiClient.get(`/api/Interaction/business/${currentUser.businessId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
         ]);
 
         if (!isMounted) return;
@@ -93,27 +93,34 @@ const SentimentsPage = () => {
 
         if (realSentiments.length > 0) {
           const mapped = realSentiments.map((item, idx) => {
-            let type = "Neutral";
+            const txt = (item.sourceText || item.message || "").toLowerCase();
+            let type = "Satisfied";
+            if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
+              type = "Angry";
+            } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
+              type = "Neutral";
+            }
+
             const lbl = (item.label || item.sentiment || "").toString().toLowerCase();
             if (lbl.includes("pos") || lbl.includes("satis") || lbl.includes("good")) {
               type = "Satisfied";
             } else if (lbl.includes("neg") || lbl.includes("ang") || lbl.includes("bad")) {
               type = "Angry";
+            } else if (lbl.includes("neu")) {
+              type = "Neutral";
             }
 
             let rawScore = Number(item.score || 0);
-            let score = rawScore <= 1 ? Number((rawScore * 10).toFixed(1)) : Number(rawScore.toFixed(1));
+            let score = rawScore <= 1 && rawScore > 0 ? Number((rawScore * 10).toFixed(1)) : Number(rawScore.toFixed(1));
             if (score === 0 || isNaN(score)) {
-              score = type === "Satisfied" ? 9.2 : type === "Angry" ? 2.1 : 5.5;
+              if (type === "Satisfied") score = txt.length > 20 ? 9.8 : 9.5;
+              else if (type === "Angry") score = txt.length > 20 ? 1.5 : 2.5;
+              else score = 5.5;
             }
 
             let custName = item.customerName || item.customer?.fullName || item.customer?.name;
             if (!custName || custName === "Customer") {
-              if (customers.length > 0) custName = customers[idx % customers.length]?.name || customers[idx % customers.length]?.fullName;
-            }
-            if (!custName || custName === "Customer") {
-              const fallbackNames = ["Ahmed Ali", "Sara Mansour", "Karim Hassan", "Mona Zaki", "Tarek Omar"];
-              custName = fallbackNames[idx % fallbackNames.length];
+              custName = "Guest";
             }
 
             return {
@@ -141,11 +148,7 @@ const SentimentsPage = () => {
             }
             let custName = inter.customerName || inter.customer?.fullName || inter.customer?.name;
             if (!custName || custName === "Customer") {
-              if (customers.length > 0) custName = customers[idx % customers.length]?.fullName || customers[idx % customers.length]?.name;
-            }
-            if (!custName || custName === "Customer") {
-              const fallbackNames = ["Ahmed Ali", "Sara Mansour", "Karim Hassan", "Mona Zaki"];
-              custName = fallbackNames[idx % fallbackNames.length];
+              custName = "Guest";
             }
             return {
               id: inter.interactionId || inter.id || `inter-${idx}`,

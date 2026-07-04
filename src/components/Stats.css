@@ -60,6 +60,34 @@
   font-weight: 500;
 }
 
+@media (max-width: 1440px) {
+  .stats-container {
+    padding: 1.75rem 2rem;
+  }
+  .stats-heading {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  .stat-card {
+    padding: 1.15rem 1rem;
+  }
+  .stat-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-height: 850px) {
+  .stats-container {
+    padding: 1.25rem 2rem;
+  }
+  .stats-heading {
+    margin-bottom: 0.75rem;
+  }
+  .stat-card {
+    padding: 1rem;
+  }
+}
+
 @media (max-width: 900px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);

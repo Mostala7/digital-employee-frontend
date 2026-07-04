@@ -198,3 +198,21 @@
 .tag-report-Weekly { background: #fce7f3; color: #be185d; }
 .tag-report-Monthly { background: #ffedd5; color: #c2410c; }
 .tag-report-Custom { background: #f3e8ff; color: #7e22ce; }
+
+@media (max-width: 1440px) {
+  .reports-content-area {
+    padding: 0 1rem;
+  }
+  .report-type-card {
+    padding: 1.25rem;
+  }
+  .report-gen-form {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-type-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

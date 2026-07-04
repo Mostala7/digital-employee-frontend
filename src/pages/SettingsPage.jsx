@@ -298,6 +298,13 @@ const SettingsPage = () => {
         }
       }
 
+      // Explicitly trigger reload so AI server indexes the new business's data
+      try {
+        await apiClient.post("/api/OwnerChat/reload", { businessId: newBusiness.id });
+      } catch (reloadErr) {
+        console.error("Failed to reload OwnerChat index after onboarding:", reloadErr);
+      }
+
       setIsOnboarding(false);
       window.location.href = "/dashboard"; // Force redirect to dashboard
     } catch (error) {

@@ -46,6 +46,43 @@
   border: 1px solid #a7f3d0;
 }
 
+.tag-status-escalated {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.tickets-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  justify-content: center;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 1440px) {
+  .tickets-stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .tickets-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .tickets-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Table Sort Styles */
 .sort-clickable {
   cursor: pointer;

@@ -11,7 +11,17 @@
   align-items: stretch;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1440px) {
+  .ticket-grid {
+    grid-template-columns: 2fr 1fr;
+    gap: 1.25rem;
+  }
+  .ticket-wrapper {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
   .ticket-grid {
     grid-template-columns: 1fr;
   }

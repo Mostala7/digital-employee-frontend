@@ -266,7 +266,20 @@
 }
 
 /* ─── Responsive ─── */
-@media (max-width: 900px) {
+@media (max-width: 1440px) {
+  .payment-layout {
+    grid-template-columns: 1fr 340px;
+    gap: 1.25rem;
+  }
+  .payment-form-card {
+    padding: 2rem;
+  }
+  .order-summary-card {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
   .payment-layout {
     grid-template-columns: 1fr;
   }
