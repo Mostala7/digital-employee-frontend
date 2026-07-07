@@ -45,7 +45,7 @@ const TicketPage = () => {
         const mappedData = {
           ...data,
           ticketId: data.ticketId || data.id || decodedId,
-          status: data.status || "Open",
+          status: (data.status === "Escalated" || data.status === "escalated") ? "Open" : (data.status || "Open"),
           priority: data.priorityLevel || data.priority || "Medium",
           resolutionNotes: data.resolutionNotes || data.escalationReason || data.description || "",
           assignedTo: data.assignedToUserName || "Unassigned",
@@ -70,22 +70,36 @@ const TicketPage = () => {
     try {
       const idToUse = ticket.id || ticket.ticketId;
       
-      await apiClient.put(`/api/Ticket/${idToUse}`, {
+      const updatePayload = {
         status: ticketStatus || "Open",
         subject: ticket.subject || "Updated Ticket",
         resolutionNotes: noteContent || ""
-      });
+      };
+
+      await apiClient.put(`/api/Ticket/${idToUse}`, updatePayload);
+      
+      if (ticketStatus === "Closed") {
+        await apiClient.post(`/api/Ticket/${idToUse}/close`, {
+           ticketId: idToUse,
+           closedByUserId: currentUser?.id || currentUser?.userId
+        });
+        updatePayload.closedAt = new Date().toISOString();
+      } else {
+        updatePayload.closedAt = null;
+      }
       
       let newAssignedTo = ticket.assignedTo;
 
       // Assign the ticket to the current user only if unassigned and not being closed
       if (currentUser && ticket.assignedTo === "Unassigned" && ticketStatus !== "Closed") {
          try {
-            await apiClient.post(`/api/Ticket/${idToUse}/assign`, {
+            const res = await apiClient.post(`/api/Ticket/${idToUse}/assign`, {
                ticketId: idToUse,
                userId: currentUser.id || currentUser.userId
             });
-            newAssignedTo = currentUser.fullName || currentUser.name || "Owner";
+            if (res.status === 200 || res.status === 204 || res.data) {
+               newAssignedTo = res.data?.assignedToUserName || currentUser.fullName || currentUser.name || "Owner";
+            }
          } catch (e) {
             console.log("Assignment silently failed or already assigned", e.response?.data);
          }
@@ -102,6 +116,12 @@ const TicketPage = () => {
         assignedTo: newAssignedTo,
         updatedAt: new Date().toISOString(),
       };
+      
+      if (ticketStatus === "Closed") {
+        updated.closedAt = updatePayload.closedAt;
+      } else {
+        updated.closedAt = null;
+      }
       
       setTicket(updated);
       setNoteContent(noteContent);
@@ -206,19 +226,27 @@ const TicketPage = () => {
                 <div className="meta-row">
                   <span className="meta-label">Opened At</span>
                   <span className="meta-value meta-muted">
-                    {new Date(ticket.createdAt).toLocaleString("en-GB", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {(() => {
+                      const d = ticket.createdAt || ticket.CreatedAt || new Date().toISOString();
+                      const dateObj = new Date(d);
+                      return !isNaN(dateObj.getTime()) ? dateObj.toLocaleString("en-GB", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }) : "—";
+                    })()}
                   </span>
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Last Updated</span>
                   <span className="meta-value meta-muted">
-                    {new Date(ticket.updatedAt || ticket.closedAt || ticket.createdAt).toLocaleString("en-GB", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {(() => {
+                      const fallback = ticket.updatedAt || ticket.UpdatedAt || ticket.closedAt || ticket.ClosedAt || ticket.createdAt || ticket.CreatedAt || new Date().toISOString();
+                      const dateObj = new Date(fallback);
+                      return !isNaN(dateObj.getTime()) && dateObj.getFullYear() > 2000 ? dateObj.toLocaleString("en-GB", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }) : "—";
+                    })()}
                   </span>
                 </div>
 
@@ -425,8 +453,8 @@ const TicketPage = () => {
                       {/* Full-width Toggle Mechanism */}
                       <div style={{ display: 'flex', width: '100%', backgroundColor: '#f1f5f9', borderRadius: '8px', padding: '4px', border: '1px solid #e2e8f0' }}>
                         {["Open", "InProgress", "Closed"].map((status) => {
-                          const isOriginal = ticket.status === status;
-                          const isActive = ticketStatus === status;
+                          const isOriginal = ticket.status === status || (status === "Open" && ticket.status === "Escalated");
+                          const isActive = ticketStatus === status || (status === "Open" && ticketStatus === "Escalated");
                           return (
                             <button
                               key={status}

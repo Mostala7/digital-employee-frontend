@@ -8,23 +8,23 @@ import { useAuth } from "../contexts/AuthContext";
 
 // Typewriter component for fast perceived rendering
 const TypewriterText = ({ text, speed = 15 }) => {
-  const [displayedText, setDisplayedText] = useState("");
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    let i = 0;
-    setDisplayedText(""); // Reset
+    setCount(0);
     const timer = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText((prev) => prev + text.charAt(i));
-        i++;
-      } else {
-        clearInterval(timer);
-      }
+      setCount((prev) => {
+        if (prev >= text.length) {
+          clearInterval(timer);
+          return prev;
+        }
+        return prev + 1;
+      });
     }, speed);
     return () => clearInterval(timer);
   }, [text, speed]);
 
-  return <span>{displayedText}</span>;
+  return <span>{text.slice(0, count)}</span>;
 };
 
 const AgentPage = () => {
@@ -44,6 +44,12 @@ const AgentPage = () => {
   const [activeInteractionId, setActiveInteractionId] = useState(null);
   const [chatEnded, setChatEnded] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingValue, setRatingValue] = useState(5);
+  const [feedbackNote, setFeedbackNote] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [activeTicketId, setActiveTicketId] = useState(null);
 
   const [isTyping, setIsTyping] = useState(false);
 
@@ -62,6 +68,91 @@ const AgentPage = () => {
     setChatMode('select');
     setChatEnded(false);
     setActiveInteractionId(null);
+    setActiveTicketId(null);
+  };
+
+  const handleSubmitFeedback = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setIsSubmittingFeedback(true);
+    setFeedbackError("");
+
+    try {
+      const bizId = currentUser?.businessId;
+      const custId = customerData?.customerId;
+
+      if (!bizId || !custId) {
+        setShowRatingModal(false);
+        await handleEndCustomerChat();
+        return;
+      }
+
+      // =========================================================================================
+      // FUTURE BACKEND UPDATE NOTE:
+      // Once the backend team makes `TicketId` optional in FeedbackCreateDTOValidator
+      // and adds `InteractionId` to FeedbackCreateDTO, you can delete lines 95-135 below
+      // and replace them with this simple API call:
+      //
+      // await apiClient.post('/api/Feedback', {
+      //   interactionId: activeInteractionId,
+      //   customerId: custId,
+      //   rating: Number(ratingValue) || 5,
+      //   comment: feedbackNote?.trim() || "No comment provided."
+      // });
+      // =========================================================================================
+
+      let targetTicketId = activeTicketId;
+
+      if (!targetTicketId) {
+        try {
+          const ticketsRes = await apiClient.get(`/api/Ticket/business/${bizId}`);
+          const tickets = ticketsRes.data || [];
+          const found = tickets.find(t => 
+            (activeInteractionId && (t.interactionId === activeInteractionId || t.InteractionId === activeInteractionId)) ||
+            t.customerId === custId || t.CustomerId === custId
+          );
+          if (found) {
+            targetTicketId = found.id || found.Id || found.ticketId || found.TicketId;
+          }
+        } catch (err) {
+          console.warn("Could not fetch tickets for feedback lookup:", err);
+        }
+      }
+
+      if (!targetTicketId) {
+        try {
+          const createTicketRes = await apiClient.post('/api/Ticket', {
+            subject: `Chat Session Feedback - ${customerData?.fullName || 'Customer'}`,
+            customerId: custId,
+            businessId: bizId,
+            interactionId: activeInteractionId || null
+          });
+          const newT = createTicketRes.data;
+          targetTicketId = newT?.id || newT?.Id || newT?.ticketId || newT?.TicketId;
+        } catch (err) {
+          console.warn("Could not create fallback ticket for feedback:", err);
+        }
+      }
+
+      if (!targetTicketId) {
+        targetTicketId = "general-chat-feedback";
+      }
+
+      await apiClient.post('/api/Feedback', {
+        ticketId: targetTicketId,
+        customerId: custId,
+        rating: Number(ratingValue) || 5,
+        comment: feedbackNote?.trim() || "No comment provided."
+      });
+
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    } finally {
+      setIsSubmittingFeedback(false);
+      setShowRatingModal(false);
+      setRatingValue(5);
+      setFeedbackNote("");
+      await handleEndCustomerChat();
+    }
   };
   const chatScrollRef = useRef(null);
   const activeInteractionRef = useRef(null);
@@ -83,6 +174,47 @@ const AgentPage = () => {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (chatMode === 'owner') {
+      const fetchOwnerHistory = async () => {
+        try {
+          const response = await apiClient.get('/api/OwnerChat/history');
+          const history = response.data || [];
+          
+          const mappedMessages = [];
+          history.forEach((item, index) => {
+            mappedMessages.push({
+              id: `history-user-${index}`,
+              sender: 'user',
+              text: item.message
+            });
+            mappedMessages.push({
+              id: `history-ai-${index}`,
+              sender: 'ai',
+              text: item.reply,
+              confidence: item.confidence
+            });
+          });
+          
+          setMessages(mappedMessages);
+        } catch (err) {
+          console.error("Failed to fetch owner chat history:", err);
+        }
+      };
+      
+      fetchOwnerHistory();
+    }
+  }, [chatMode]);
+
+  const handleClearHistory = async () => {
+    try {
+      await apiClient.delete('/api/OwnerChat/history');
+      setMessages([]);
+    } catch (err) {
+      console.error("Failed to clear owner chat history:", err);
+    }
+  };
 
   const handleSend = async () => {
     if (!message.trim() || isTyping) return;
@@ -140,6 +272,10 @@ const AgentPage = () => {
         const newIntId = response.data.interactionId || response.data.InteractionId || response.data.id || response.data.Id;
         if (!activeInteractionId && newIntId) {
           setActiveInteractionId(newIntId);
+        }
+        const newTId = response.data.ticketId || response.data.TicketId;
+        if (newTId) {
+          setActiveTicketId(newTId);
         }
       }
 
@@ -348,28 +484,30 @@ const AgentPage = () => {
             {chatMode === 'select' ? null : chatMode === 'owner' ? (
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
-                  className="agent-btn-outline highlight-btn"
-                  onClick={() => { setModalAction('chat'); setShowCustomerModal(true); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  className="agent-btn-outline"
+                  onClick={handleClearHistory}
+                  style={{ color: '#ef4444', borderColor: '#ef4444' }}
                 >
-                  <MessageSquare size={16} /> Customer Chat
+                  Clear History
                 </button>
                 <button
-                  className="agent-btn-outline"
-                  onClick={() => { setModalAction('call'); setShowCustomerModal(true); }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    backgroundColor: '#10b981', color: 'white', borderColor: '#10b981'
-                  }}
+                  className="agent-btn-outline exit-btn"
+                  onClick={() => setChatMode('select')}
                 >
-                  <PhoneCall size={16} /> Customer Call
+                  Exit IRIS Chat
                 </button>
               </div>
             ) : (
               <button
                 className="agent-btn-outline exit-btn"
                 style={activeInteractionId ? { backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444' } : {}}
-                onClick={handleEndCustomerChat}
+                onClick={() => {
+                  if (customerData) {
+                    setShowRatingModal(true);
+                  } else {
+                    handleEndCustomerChat();
+                  }
+                }}
               >
                 {activeInteractionId ? "End Customer Chat" : "Exit Customer Mode"}
               </button>
@@ -482,7 +620,7 @@ const AgentPage = () => {
               padding: '3.5rem 3rem',
               borderRadius: '20px',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-              maxWidth: '650px',
+              maxWidth: '850px',
               width: '100%',
               textAlign: 'center',
               border: '1px solid #e2e8f0'
@@ -504,7 +642,48 @@ const AgentPage = () => {
               <h2 style={{ fontSize: '1.85rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem' }}>
                 Select Interaction Channel
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '2.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginTop: '2.5rem' }}>
+                <button
+                  onClick={() => { setChatMode('owner'); }}
+                  style={{
+                    padding: '2rem 1.5rem',
+                    borderRadius: '16px',
+                    border: '2px solid #e2e8f0',
+                    background: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '1.25rem',
+                    transition: 'all 0.25s ease',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 15px 20px -5px rgba(139, 92, 246, 0.15)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.02)'; }}
+                >
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    minWidth: '64px',
+                    minHeight: '64px',
+                    borderRadius: '16px',
+                    background: '#f5f3ff',
+                    color: '#8b5cf6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    flexShrink: 0,
+                    boxSizing: 'border-box'
+                  }}>
+                    <MessageSquare size={32} style={{ display: 'block', margin: 'auto', flexShrink: 0 }} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#1e293b', margin: '0 0 0.35rem 0' }}>Chat with IRIS</h4>
+                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Your AI assistant</span>
+                  </div>
+                </button>
+
                 <button
                   onClick={() => { setModalAction('chat'); setShowCustomerModal(true); }}
                   style={{
@@ -611,7 +790,7 @@ const AgentPage = () => {
                         <img src={aiLogo} alt="IRIS" className="agent-msg-avatar" />
                       )}
                       <div className="agent-msg-bubble-container">
-                        <div className={`agent-msg-bubble ${msg.sender} ${chatMode === 'customer' ? 'customer-theme' : ''}`}>
+                        <div dir="auto" className={`agent-msg-bubble ${msg.sender} ${chatMode === 'customer' ? 'customer-theme' : ''}`}>
                           {msg.sender === 'ai' ? (
                             <TypewriterText text={msg.text} speed={10} />
                           ) : (
@@ -655,6 +834,7 @@ const AgentPage = () => {
 
                 <input
                   type="text"
+                  dir="auto"
                   className="agent-input-field"
                   placeholder={chatMode === 'customer' && chatEnded ? "Chat ended. Start a new session to continue..." : (isTyping ? "AI is thinking..." : "Message to IRIS...")}
                   value={message}
@@ -674,6 +854,101 @@ const AgentPage = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Rating & Feedback Modal */}
+        {showRatingModal && (
+          <div className="customer-modal-overlay" style={{ zIndex: 1100 }}>
+            <div className="customer-modal-content rating-modal-content" style={{ maxWidth: '440px', padding: '2rem', borderRadius: '20px', background: '#ffffff', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <div className="rating-modal-header" style={{ marginBottom: '1.25rem' }}>
+                <div className="rating-modal-icon" style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', color: '#d97706', fontSize: '1.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', boxShadow: '0 10px 15px -3px rgba(245, 158, 11, 0.2)' }}>
+                  ★
+                </div>
+                <h3 style={{ fontSize: '1.45rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
+                  Rate Your Chat Experience
+                </h3>
+                <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: '1.5', margin: 0 }}>
+                  Your feedback helps IRIS learn and improve future customer interactions.
+                </p>
+              </div>
+
+              {feedbackError && (
+                <div className="form-error-message" style={{ margin: '1rem 0' }}>
+                  {feedbackError}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitFeedback} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="rating-stars-container" style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                  <div className="rating-stars-row" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        className={`rating-star-btn ${star <= ratingValue ? 'active' : ''}`}
+                        onClick={() => setRatingValue(star)}
+                        title={`${star} Star${star > 1 ? 's' : ''}`}
+                        style={{ background: 'none', border: 'none', fontSize: '2.2rem', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)', color: star <= ratingValue ? '#f59e0b' : '#cbd5e1', transform: star <= ratingValue ? 'scale(1.1)' : 'scale(1)', padding: '0 4px', textShadow: star <= ratingValue ? '0 4px 12px rgba(245, 158, 11, 0.35)' : 'none' }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <span className="rating-label-text" style={{ fontSize: '0.9rem', fontWeight: 600, color: '#334155', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {ratingValue === 1 && "Poor"}
+                    {ratingValue === 2 && "Fair"}
+                    {ratingValue === 3 && "Good"}
+                    {ratingValue === 4 && "Very Good"}
+                    {ratingValue === 5 && "Excellent!"}
+                  </span>
+                </div>
+
+                <div className="form-group" style={{ textAlign: 'left', margin: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>
+                    Additional Feedback (Optional)
+                  </label>
+                  <textarea
+                    className="customer-form-input"
+                    rows="3"
+                    placeholder="Tell us what went well or how we can improve this chat..."
+                    value={feedbackNote}
+                    onChange={(e) => setFeedbackNote(e.target.value)}
+                    style={{ width: '100%', resize: 'vertical', padding: '0.85rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontFamily: 'inherit', fontSize: '0.9rem', transition: 'border-color 0.2s, box-shadow 0.2s', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="agent-btn-outline"
+                    style={{ flex: 1, padding: '0.85rem', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', borderColor: '#cbd5e1', color: '#475569' }}
+                    onClick={() => {
+                      setShowRatingModal(false);
+                      handleEndCustomerChat();
+                    }}
+                    disabled={isSubmittingFeedback}
+                  >
+                    Skip & Exit
+                  </button>
+                  <button
+                    type="submit"
+                    className="customer-submit-btn"
+                    style={{ flex: 1.5, padding: '0.85rem', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)', color: 'white', border: 'none', boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)', cursor: 'pointer' }}
+                    disabled={isSubmittingFeedback}
+                  >
+                    {isSubmittingFeedback ? (
+                      <>
+                        <span className="loading-spinner-small" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Feedback"
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

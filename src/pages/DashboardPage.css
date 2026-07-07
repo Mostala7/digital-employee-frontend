@@ -625,9 +625,12 @@
   }
   .charts-grid {
     gap: 1rem;
+    flex-wrap: wrap;
   }
   .chart-card {
     padding: 1.25rem 1.5rem;
+    flex: 1 1 calc(50% - 1rem);
+    min-width: calc(50% - 1rem);
   }
   .donut-chart-wrapper {
     gap: 1.5rem;

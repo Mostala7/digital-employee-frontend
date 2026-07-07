@@ -354,3 +354,24 @@
   font-size: 0.75rem;
   line-height: 1.4;
 }
+
+
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  .topbar-right {
+    gap: 0.75rem;
+  }
+  .user-info {
+    display: none;
+  }
+  .topbar-center-actions {
+    flex-wrap: wrap;
+  }
+  .topbar-title {
+    font-size: 1.25rem;
+  }
+}

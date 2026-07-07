@@ -47,7 +47,7 @@ const TicketsPage = () => {
     direction: "desc",
   });
   const [dateFilter, setDateFilter] = useState("All Time");
-  
+
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -66,13 +66,13 @@ const TicketsPage = () => {
 
   useEffect(() => {
     const fetchTickets = async () => {
+      if (!currentUser?.businessId) return;
       setIsLoading(true);
       try {
-        const bizId = currentUser?.businessId;
-        const url = bizId ? `/api/Ticket/business/${bizId}` : '/api/Ticket';
+        const url = `/api/Ticket/business/${currentUser.businessId}`;
         const response = await apiClient.get(url);
         const data = response.data || [];
-        
+
         // Map backend properties to the UI's expected structure if they differ
         const mappedTickets = data.map(t => {
           const st = t.status || "Open";
@@ -82,11 +82,11 @@ const TicketsPage = () => {
             ticketId: t.ticketId || t.id || "UNKNOWN",
             customerName: t.customer?.name || t.customerName || "Unknown Customer",
             priority: t.priorityLevel || t.priority || "Medium",
-            status: st,
+            status: (st === "Escalated" || st === "escalated") ? "Open" : st,
             createdAt: t.createdAt || new Date().toISOString()
           };
         });
-        
+
         setTickets(mappedTickets);
       } catch (error) {
         console.error("Failed to fetch tickets:", error);
@@ -94,7 +94,7 @@ const TicketsPage = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchTickets();
   }, []);
 
@@ -119,7 +119,7 @@ const TicketsPage = () => {
     const matchesPriority =
       filterPriority.length === 0 || filterPriority.includes(ticket.priority);
     const matchesStatus =
-      filterStatus.length === 0 || filterStatus.includes(ticket.status);
+      filterStatus.length === 0 || filterStatus.includes(ticket.status) || (filterStatus.includes("Open") && ticket.status === "Escalated");
 
     const matchesDate = (() => {
       if (dateFilter === "All Time") return true;
@@ -148,7 +148,7 @@ const TicketsPage = () => {
 
   const stats = {
     total: statFilteredTickets.length,
-    open: statFilteredTickets.filter((t) => t.status === "Open").length,
+    open: statFilteredTickets.filter((t) => t.status === "Open" || t.status === "Escalated").length,
     inProgress: statFilteredTickets.filter((t) => t.status === "InProgress").length,
     closed: statFilteredTickets.filter((t) => t.status === "Closed").length,
   };
@@ -178,7 +178,7 @@ const TicketsPage = () => {
   };
 
   const PRIORITY_WT = { Critical: 4, High: 3, Medium: 2, Low: 1 };
-  const STATUS_WT = { Open: 3, InProgress: 2, Closed: 1 };
+  const STATUS_WT = { Open: 3, Escalated: 3, InProgress: 2, Closed: 1 };
 
   const sortedTickets = [...filteredTickets].sort((a, b) => {
     if (!sortConfig.key) return 0;
@@ -193,6 +193,9 @@ const TicketsPage = () => {
     } else if (sortConfig.key === "createdAt") {
       valA = new Date(a.createdAt).getTime();
       valB = new Date(b.createdAt).getTime();
+    } else if (sortConfig.key === "closedAt") {
+      valA = a.closedAt ? new Date(a.closedAt).getTime() : 0;
+      valB = b.closedAt ? new Date(b.closedAt).getTime() : 0;
     }
 
     if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
@@ -209,7 +212,6 @@ const TicketsPage = () => {
       >
         <Topbar
           pageTitle="Support Tickets"
-          subtitle="Manage escalations and customer support requests."
         >
           <div className="logs-search">
             <Search size={18} className="search-icon" />
@@ -243,6 +245,7 @@ const TicketsPage = () => {
                   appearance: "none",
                   cursor: "pointer",
                   paddingRight: "1.5rem",
+                  maxWidth: "140px",
                 }}
               >
                 <option
@@ -403,216 +406,199 @@ const TicketsPage = () => {
                 <table className="customers-table logs-table">
                   <thead>
                     <tr>
-                    <th>Ticket ID</th>
-                    <th>Subject</th>
-                    <th>Customer</th>
-                    <th>Type</th>
-                    <th
-                      className={
-                        sortConfig.key === "status"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("status")}
-                    >
-                      Status{" "}
-                      {getSortIndicator("status") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th
-                      className={
-                        sortConfig.key === "priority"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("priority")}
-                    >
-                      Priority{" "}
-                      {getSortIndicator("priority") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th
-                      className={
-                        sortConfig.key === "createdAt"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("createdAt")}
-                    >
-                      Opened{" "}
-                      {getSortIndicator("createdAt") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th>Last Updated</th>
-                    <th>Assigned To</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedTickets.length > 0 ? (
-                    sortedTickets.map((ticket) => (
-                      <tr key={ticket.ticketId}>
-                        <td>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              color: "#1e293b",
-                              fontSize: "0.875rem",
-                            }}
-                          >
-                            {ticket.ticketId}
-                          </span>
-                        </td>
-                        <td style={{ maxWidth: "240px" }}>
-                          <span
-                            style={{
-                              color: "#475569",
-                              fontSize: "0.875rem",
-                              fontWeight: 500,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              display: "inline-block",
-                              width: "100%",
-                            }}
-                          >
-                            {ticket.subject}
-                          </span>
-                        </td>
-                        <td>
-                          <div
-                            style={{ display: "flex", flexDirection: "column" }}
-                          >
+                      <th>Subject</th>
+                      <th>Customer</th>
+                      <th
+                        className={
+                          sortConfig.key === "status"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("status")}
+                      >
+                        Status{" "}
+                        {getSortIndicator("status") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th
+                        className={
+                          sortConfig.key === "priority"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("priority")}
+                      >
+                        Priority{" "}
+                        {getSortIndicator("priority") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th
+                        className={
+                          sortConfig.key === "createdAt"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("createdAt")}
+                      >
+                        Opened{" "}
+                        {getSortIndicator("createdAt") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th
+                        className={
+                          sortConfig.key === "closedAt"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("closedAt")}
+                      >
+                        Closed At{" "}
+                        {getSortIndicator("closedAt") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedTickets.length > 0 ? (
+                      sortedTickets.map((ticket) => (
+                        <tr key={ticket.ticketId}>
+                          <td style={{ maxWidth: "240px" }}>
                             <span
                               style={{
-                                fontWeight: 600,
-                                color: "#1e293b",
+                                color: "#475569",
                                 fontSize: "0.875rem",
+                                fontWeight: 500,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "inline-block",
+                                width: "100%",
                               }}
                             >
-                              {ticket.customerName}
+                              {ticket.subject}
                             </span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="log-tag tag-channel">
-                            {ticket.type}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`log-tag tag-status-${ticket.status.replace(" ", "-").toLowerCase()}`}
-                          >
-                            {ticket.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`log-tag tag-priority-${ticket.priority.toLowerCase()}`}
-                          >
-                            {ticket.priority}
-                          </span>
-                        </td>
-                        <td>
-                          {(() => {
-                            const dt = formatDateTime(ticket.createdAt);
-                            return (
-                              <div
+                          </td>
+                          <td>
+                            <div
+                              style={{ display: "flex", flexDirection: "column" }}
+                            >
+                              <span
                                 style={{
-                                  display: "flex",
-                                  flexDirection: "column",
+                                  fontWeight: 600,
+                                  color: "#1e293b",
+                                  fontSize: "0.875rem",
                                 }}
                               >
-                                <span
-                                  style={{
-                                    fontSize: "0.8rem",
-                                    color: "#1e293b",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  {dt.date}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "0.7rem",
-                                    color: "#94a3b8",
-                                  }}
-                                >
-                                  {dt.time}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </td>
-                        <td>
-                          {(() => {
-                            const dt = formatDateTime(ticket.updatedAt);
-                            return (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: "0.8rem",
-                                    color: "#1e293b",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  {dt.date}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "0.7rem",
-                                    color: "#94a3b8",
-                                  }}
-                                >
-                                  {dt.time}
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </td>
-                        <td>
-                          {ticket.assignedTo === "Unassigned" ? (
-                            <span className="log-tag tag-unassigned">
-                              Unassigned
+                                {ticket.customerName}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              className={`log-tag tag-status-${ticket.status.replace(" ", "-").toLowerCase()}`}
+                            >
+                              {ticket.status}
                             </span>
-                          ) : (
-                            <span className="log-tag tag-human">
-                              {ticket.assignedTo}
+                          </td>
+                          <td>
+                            <span
+                              className={`log-tag tag-priority-${ticket.priority.toLowerCase()}`}
+                            >
+                              {ticket.priority}
                             </span>
-                          )}
+                          </td>
+                          <td>
+                            {(() => {
+                              const dt = formatDateTime(ticket.createdAt);
+                              return (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      color: "#1e293b",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {dt.date}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: "0.7rem",
+                                      color: "#94a3b8",
+                                    }}
+                                  >
+                                    {dt.time}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </td>
+                          <td>
+                            {(() => {
+                              if (ticket.status !== "Closed" || !ticket.closedAt) return null;
+                              const dt = formatDateTime(ticket.closedAt);
+                              return (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      color: "#1e293b",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {dt.date}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: "0.7rem",
+                                      color: "#94a3b8",
+                                    }}
+                                  >
+                                    {dt.time}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </td>
+                          <td>
+                            <button
+                              className="log-view-btn"
+                              onClick={() =>
+                                navigate(
+                                  `/tickets/${encodeURIComponent(ticket.id)}`,
+                                )
+                              }
+                            >
+                              <ExternalLink size={13} />
+                              View Ticket
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="9"
+                          className="center-text"
+                          style={{ padding: "3rem", color: "#94a3b8" }}
+                        >
+                          No tickets match your search criteria.
                         </td>
-                        <td>
-                          <button
-                            className="log-view-btn"
-                            onClick={() =>
-                              navigate(
-                                `/tickets/${encodeURIComponent(ticket.id)}`,
-                              )
-                            }
-                          >
-                            <ExternalLink size={13} />
-                            View Ticket
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="9"
-                        className="center-text"
-                        style={{ padding: "3rem", color: "#94a3b8" }}
-                      >
-                        No tickets match your search criteria.
-                      </td>
                       </tr>
                     )}
                   </tbody>

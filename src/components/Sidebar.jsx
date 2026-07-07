@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import {
   LayoutDashboard,
   PieChart,
@@ -11,26 +12,49 @@ import {
   ChevronRight,
   Users,
   Bot,
+  Building2,
+  CreditCard,
 } from "lucide-react";
 import "./Sidebar.css";
 import logoImg from "../assets/logo.png";
 
 const Sidebar = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Start collapsed on laptop/smaller screens (<= 1440px)
+  const [isExpanded, setIsExpanded] = useState(() => window.innerWidth > 1440);
   const location = useLocation();
+  const { currentUser } = useAuth();
+
+  const isHumanAgent = currentUser && (() => {
+    const r = String(currentUser.role || "").toLowerCase().replace(/[-_]/g, " ").trim();
+    return r === "human agent" || r === "agent" || r === "human" || r.includes("human agent");
+  })();
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const navItems = [
+  const ownerNavItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: TicketPercent, label: "Tickets", path: "/tickets" },
     { icon: ScrollText, label: "Logs", path: "/logs" },
     { icon: Users, label: "Customers", path: "/customers" },
     { icon: Bot, label: "Agent", path: "/agent" },
     { icon: Settings, label: "Settings", path: "/settings" },
+  ].filter(item => {
+    if (isHumanAgent && (item.path === "/dashboard" || item.path === "/agent" || item.path === "/settings")) {
+      return false;
+    }
+    return true;
+  });
+
+  const adminNavItems = [
+    { icon: LayoutDashboard, label: "Analytics", path: "/admin/dashboard" },
+    { icon: Building2, label: "Businesses", path: "/admin/businesses" },
+    { icon: CreditCard, label: "Subscriptions", path: "/admin/subscriptions" },
   ];
+
+  const isAdmin = currentUser?.role === "Admin";
+  const navItems = isAdmin ? adminNavItems : ownerNavItems;
 
   return (
     <>
@@ -67,11 +91,7 @@ const Sidebar = () => {
               return (
                 <li key={item.path} className="nav-item">
                   <Link
-                    to={
-                      item.path === "/pricing" || item.path === "/logs" || item.path === "/customers" || item.path === "/tickets" || item.path === "/settings" || item.path === "/reports" || item.path === "/agent"
-                        ? item.path
-                        : "/dashboard"
-                    } // mock links for now except completed pages
+                    to={item.path}
                     className={`nav-link ${isActive ? "active" : ""}`}
                   >
                     <div className="nav-icon-container">
@@ -92,3 +112,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

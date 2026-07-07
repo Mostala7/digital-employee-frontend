@@ -46,6 +46,7 @@ const UI_CHART_COLORS = {
     Satisfied: "#55d166",
     Neutral: "#3b82f6",
     Angry: "#fbca2b",
+    Unrated: "#94a3b8",
   },
 };
 
@@ -83,6 +84,7 @@ const DashboardPage = () => {
   const [ordersData, setOrdersData] = useState([]);
   const [ticketsData, setTicketsData] = useState([]);
   const [customersData, setCustomersData] = useState([]);
+  const [feedbacksData, setFeedbacksData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -96,12 +98,13 @@ const DashboardPage = () => {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        const [dashData, interData, ordData, tktData, custData] = await Promise.all([
+        const [dashData, interData, ordData, tktData, custData, fbData] = await Promise.all([
           fetchDashboardOverview(revenuePeriod),
           currentUser?.businessId ? fetchBusinessInteractions(currentUser.businessId) : Promise.resolve([]),
           currentUser?.businessId ? apiClient.get(`/api/Order/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([]),
           currentUser?.businessId ? apiClient.get(`/api/Ticket/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([]),
-          currentUser?.businessId ? apiClient.get(`/api/Customer/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([])
+          currentUser?.businessId ? apiClient.get(`/api/Customer/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([]),
+          currentUser?.businessId ? apiClient.get(`/api/Feedback/business/${currentUser.businessId}`).then(r => r.data || []).catch(() => []) : Promise.resolve([])
         ]);
 
         if (isMounted) {
@@ -110,6 +113,7 @@ const DashboardPage = () => {
           setOrdersData(ordData || []);
           setTicketsData(tktData || []);
           setCustomersData(custData || []);
+          setFeedbacksData(fbData || []);
           setError(null);
         }
       } catch (err) {
@@ -140,60 +144,131 @@ const DashboardPage = () => {
   }, [dashboardData]);
 
   const sentimentData = useMemo(() => {
+    let satisfied = 0, neutral = 0, angry = 0, unrated = 0;
+    
     if (interactionsData && interactionsData.length > 0) {
-      let satisfied = 0, neutral = 0, angry = 0;
-      interactionsData.forEach(inter => {
-        const txt = (inter.summary || inter.transcript || inter.lastMessage || "").toLowerCase();
-        if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
-          angry++;
-        } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
-          neutral++;
+      // Build O(1) lookup maps exactly like LogsPage for 100% identical results
+      const feedbackMap = {};
+      const feedbackByCustomerMap = {};
+      const feedbackByNameMap = {};
+
+      if (feedbacksData && feedbacksData.length > 0) {
+        feedbacksData.forEach(fb => {
+          const intId = fb.interactionId || fb.InteractionId;
+          const custId = fb.customerId || fb.CustomerId;
+          const custName = (fb.customerName || fb.CustomerName || "").toLowerCase().trim();
+
+          if (intId) feedbackMap[intId] = fb;
+          if (custId) {
+            if (!feedbackByCustomerMap[custId] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByCustomerMap[custId].createdAt || feedbackByCustomerMap[custId].CreatedAt)) {
+              feedbackByCustomerMap[custId] = fb;
+            }
+          }
+          if (custName) {
+            if (!feedbackByNameMap[custName] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByNameMap[custName].createdAt || feedbackByNameMap[custName].CreatedAt)) {
+              feedbackByNameMap[custName] = fb;
+            }
+          }
+        });
+      }
+
+      interactionsData.forEach(t => {
+        const id = t.interactionId || t.id || t.InteractionId || t.Id;
+        const custId = t.customerId || t.CustomerId || t.customer?.id || t.customer?.Id;
+        const custName = (t.customer?.name || t.customerName || t.CustomerName || "").toLowerCase().trim();
+
+        const fb = feedbackMap[id] || feedbackByCustomerMap[custId] || feedbackByNameMap[custName] || {};
+        const rating = fb.rating !== undefined && fb.rating !== null && Number(fb.rating) > 0 ? Number(fb.rating) : null;
+
+        if (rating !== null) {
+          if (rating >= 4) satisfied++;
+          else if (rating <= 2) angry++;
+          else neutral++;
         } else {
-          satisfied++;
+          unrated++;
         }
       });
-      return [
-        { name: "Satisfied", value: satisfied },
-        { name: "Neutral", value: neutral },
-        { name: "Angry", value: angry },
-      ];
+    } else if (feedbacksData && feedbacksData.length > 0) {
+      let totalRated = 0;
+      feedbacksData.forEach(fb => {
+        const r = Number(fb.rating || 0);
+        if (r >= 4) satisfied++;
+        else if (r === 3) neutral++;
+        else if (r >= 1 && r <= 2) angry++;
+      });
+      totalRated = satisfied + neutral + angry;
+      const totalCount = Math.max(totalRated, insights.totalInteractions?.value || 0);
+      unrated = Math.max(0, totalCount - totalRated);
+    } else if (dashboardData?.feedbackSummary) {
+      const fs = dashboardData.feedbackSummary;
+      satisfied = fs.positiveCount || 0;
+      neutral = fs.neutralCount || 0;
+      angry = fs.negativeCount || 0;
+      const totalRated = fs.total || (satisfied + neutral + angry);
+      const totalCount = Math.max(totalRated, insights.totalInteractions?.value || 0);
+      unrated = Math.max(0, totalCount - totalRated);
     }
-    if (!dashboardData?.sentimentAnalysis) return [];
-    const sa = dashboardData.sentimentAnalysis;
+
     return [
-      { name: "Satisfied", value: sa.satisfied },
-      { name: "Neutral", value: sa.neutral },
-      { name: "Angry", value: sa.angry },
+      { name: "Satisfied", value: satisfied },
+      { name: "Neutral", value: neutral },
+      { name: "Angry", value: angry },
+      { name: "Unrated", value: unrated },
     ];
-  }, [interactionsData, dashboardData]);
+  }, [interactionsData, feedbacksData, dashboardData, insights]);
 
   const sentimentScore = useMemo(() => {
-    let satisfied = 0, neutral = 0, angry = 0;
-    
     if (interactionsData && interactionsData.length > 0) {
-      interactionsData.forEach(inter => {
-        const txt = (inter.summary || inter.transcript || inter.lastMessage || "").toLowerCase();
-        if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
-          angry++;
-        } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
-          neutral++;
-        } else {
-          satisfied++;
+      const feedbackMap = {};
+      const feedbackByCustomerMap = {};
+      const feedbackByNameMap = {};
+
+      if (feedbacksData && feedbacksData.length > 0) {
+        feedbacksData.forEach(fb => {
+          const intId = fb.interactionId || fb.InteractionId;
+          const custId = fb.customerId || fb.CustomerId;
+          const custName = (fb.customerName || fb.CustomerName || "").toLowerCase().trim();
+
+          if (intId) feedbackMap[intId] = fb;
+          if (custId) {
+            if (!feedbackByCustomerMap[custId] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByCustomerMap[custId].createdAt || feedbackByCustomerMap[custId].CreatedAt)) {
+              feedbackByCustomerMap[custId] = fb;
+            }
+          }
+          if (custName) {
+            if (!feedbackByNameMap[custName] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByNameMap[custName].createdAt || feedbackByNameMap[custName].CreatedAt)) {
+              feedbackByNameMap[custName] = fb;
+            }
+          }
+        });
+      }
+
+      const validRatings = [];
+      interactionsData.forEach(t => {
+        const id = t.interactionId || t.id || t.InteractionId || t.Id;
+        const custId = t.customerId || t.CustomerId || t.customer?.id || t.customer?.Id;
+        const custName = (t.customer?.name || t.customerName || t.CustomerName || "").toLowerCase().trim();
+
+        const fb = feedbackMap[id] || feedbackByCustomerMap[custId] || feedbackByNameMap[custName] || {};
+        const rating = fb.rating !== undefined && fb.rating !== null && Number(fb.rating) > 0 ? Number(fb.rating) : null;
+        if (rating !== null && rating > 0) {
+          validRatings.push(rating);
         }
       });
-    } else if (dashboardData?.sentimentAnalysis) {
-      satisfied = dashboardData.sentimentAnalysis.satisfied;
-      neutral = dashboardData.sentimentAnalysis.neutral;
-      angry = dashboardData.sentimentAnalysis.angry;
-    }
 
-    const actualTotal = satisfied + neutral + angry;
-    if (actualTotal === 0) return "0.0";
-    
-    // Scale: Satisfied=10, Neutral=5, Angry=1
-    const score = ((satisfied * 10) + (neutral * 5) + (angry * 1)) / actualTotal;
-    return score.toFixed(1);
-  }, [interactionsData, dashboardData]);
+      if (validRatings.length === 0) return "-";
+      const sum = validRatings.reduce((acc, r) => acc + r, 0);
+      return (sum / validRatings.length).toFixed(1);
+    } else if (feedbacksData && feedbacksData.length > 0) {
+      const valid = feedbacksData.filter(f => Number(f.rating) > 0);
+      if (valid.length === 0) return "-";
+      const sum = valid.reduce((acc, f) => acc + Number(f.rating), 0);
+      return (sum / valid.length).toFixed(1);
+    } else if (dashboardData?.feedbackSummary && dashboardData.feedbackSummary.total > 0) {
+      return (dashboardData.feedbackSummary.averageRating || 0).toFixed(1);
+    }
+    return "-";
+  }, [interactionsData, feedbacksData, dashboardData]);
 
   const calculatedTotalRevenue = useMemo(() => {
     if (ordersData && ordersData.length > 0) {
@@ -538,14 +613,8 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            <div
-              className="chart-card"
-              onClick={() => navigate("/sentiments")}
-              style={{ cursor: "pointer", transition: "transform 0.2s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.02)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-            >
-              <h3 className="chart-title">Sentiment Analysis</h3>
+            <div className="chart-card">
+              <h3 className="chart-title">Feedback</h3>
               <div className="donut-chart-wrapper">
                 <div className="donut-chart-relative" style={{ width: "220px", height: "220px", position: "relative" }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -565,10 +634,6 @@ const DashboardPage = () => {
                           <Cell
                             key={`cell-${index}`}
                             fill={UI_CHART_COLORS.sentiment[entry.name] || "#3b82f6"}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate("/sentiments", { state: { filter: entry.name } });
-                            }}
                             style={{ outline: "none", stroke: "none" }}
                           />
                         ))}
@@ -594,6 +659,40 @@ const DashboardPage = () => {
               </div>
             </div>
 
+            <div className="chart-card uniform-scroll-card">
+              <h3 className="chart-title">Top Products</h3>
+              <div className="scrollable-body">
+                <table className="top-products-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "40px" }}>#</th>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>Units Sold</th>
+                      <th>Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(dashboardData?.topProducts || []).map((product, idx) => (
+                      <tr key={product.menuItemId || idx}>
+                        <td className="product-rank">{idx + 1}</td>
+                        <td className="product-name">{product.name}</td>
+                        <td>
+                          <span className={`category-pill cat-${(product.category || '').toLowerCase().replace(' ', '-')}`}>
+                            {product.category}
+                          </span>
+                        </td>
+                        <td>{product.totalUnitsSold.toLocaleString()}</td>
+                        <td className="product-revenue">${product.revenue.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="charts-grid mt-6">
             <div className="chart-card">
               <div className="chart-header-row">
                 <h3 className="chart-title">Revenue Trends</h3>
@@ -628,40 +727,6 @@ const DashboardPage = () => {
                     <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{ r: 6, fill: "#6366f1", stroke: "#ffffff", strokeWidth: 2 }} />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          <div className="charts-grid mt-6">
-            <div className="chart-card uniform-scroll-card">
-              <h3 className="chart-title">Top Products</h3>
-              <div className="scrollable-body">
-                <table className="top-products-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: "40px" }}>#</th>
-                      <th>Product</th>
-                      <th>Category</th>
-                      <th>Units Sold</th>
-                      <th>Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(dashboardData?.topProducts || []).map((product, idx) => (
-                      <tr key={product.menuItemId || idx}>
-                        <td className="product-rank">{idx + 1}</td>
-                        <td className="product-name">{product.name}</td>
-                        <td>
-                          <span className={`category-pill cat-${(product.category || '').toLowerCase().replace(' ', '-')}`}>
-                            {product.category}
-                          </span>
-                        </td>
-                        <td>{product.totalUnitsSold.toLocaleString()}</td>
-                        <td className="product-revenue">${product.revenue.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </div>
 

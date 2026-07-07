@@ -41,7 +41,15 @@ const LoginPage = () => {
       };
       setTempPassword(password);
       login(userData, data.token);
-      navigate("/dashboard");
+
+      const r = String(data.role || "").toLowerCase().replace(/[-_]/g, " ").trim();
+      if (r === "admin") {
+        navigate("/admin/dashboard");
+      } else if (r === "human agent" || r === "agent" || r === "human" || r.includes("human agent")) {
+        navigate("/tickets");
+      } else {
+        navigate("/dashboard");
+      }
 
     } catch (error) {
       console.error("Log in error:", error);

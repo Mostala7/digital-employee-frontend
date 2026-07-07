@@ -91,8 +91,7 @@ const CallPage = () => {
           const allTickets = tktRes.data || [];
           fetchedTicket = allTickets.find(t =>
             (t.interactionId || t.InteractionId) === decodedId ||
-            (t.interactionId || t.InteractionId) === (intData?.interactionId || intData?.id || sumData?.interactionId) ||
-            (t.customerId || t.CustomerId) === actualCustomerId
+            (t.interactionId || t.InteractionId) === (intData?.interactionId || intData?.id || sumData?.interactionId)
           );
         }
 
@@ -129,8 +128,8 @@ const CallPage = () => {
           notes: intData?.notes || sumData?.escalationReason || "",
           startedAt: sumData?.startTime || intData?.startedAt || new Date().toISOString(),
           endedAt: sumData?.endTime || intData?.endedAt || null,
-          sentimentScore: sumData?.sentimentScore ?? intData?.sentimentScore ?? 8,
-          sentimentTag: sumData?.sentimentLabel || intData?.sentimentTag || "Satisfied",
+          sentimentScore: (sumData?.sentimentScore !== undefined && sumData?.sentimentScore !== null) ? sumData.sentimentScore : ((intData?.sentimentScore !== undefined && intData?.sentimentScore !== null) ? intData.sentimentScore : null),
+          sentimentTag: ((sumData?.sentimentScore !== undefined && sumData?.sentimentScore !== null) || (intData?.sentimentScore !== undefined && intData?.sentimentScore !== null)) ? (sumData?.sentimentLabel || intData?.sentimentTag || intData?.sentiment || "Neutral") : "Unrated",
           history: fetchedHistory.map(h => ({
             id: h.interactionId || h.id,
             customerName: h.customerName || "Unknown",
@@ -140,14 +139,14 @@ const CallPage = () => {
             status: h.status || "Completed",
             notes: h.notes || "—",
             feedbackRating: h.feedback?.rating || null,
-            sentimentScore: h.sentimentScore || 8,
-            sentimentTag: h.sentimentTag || "Satisfied"
+            sentimentScore: h.sentimentScore !== undefined && h.sentimentScore !== null ? h.sentimentScore : null,
+            sentimentTag: h.sentimentScore !== undefined && h.sentimentScore !== null ? (h.sentimentTag || h.sentiment || "Neutral") : "Unrated"
           })),
           relatedTicket: fetchedTicket ? {
             ticketId: fetchedTicket.ticketNumber || `TKT-${fetchedTicket.ticketId || fetchedTicket.id}`,
             subject: fetchedTicket.title || fetchedTicket.subject || "Voice Support Ticket",
             priority: fetchedTicket.priority || "Normal",
-            status: fetchedTicket.status || "Open",
+            status: (fetchedTicket.status === "Escalated" || fetchedTicket.status === "escalated") ? "Open" : (fetchedTicket.status || "Open"),
             assignedTo: fetchedTicket.assignedAgentName || "Unassigned",
             createdAt: fetchedTicket.createdAt || new Date().toISOString()
           } : null,
@@ -292,11 +291,11 @@ const CallPage = () => {
                     <span className="meta-label">CSAT &amp; Sentiment</span>
                     <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-end" }}>
                       <span className={`log-tag ${sentimentClass(interaction?.sentimentTag)}`}>
-                        {interaction?.sentimentTag || "Satisfied"}
+                        {interaction?.sentimentTag || "Unrated"}
                       </span>
                       <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
                         <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>
-                          {interaction?.sentimentScore ?? 8}
+                          {interaction?.sentimentScore ?? '-'}
                         </span>
                         <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>/10</span>
                       </div>
@@ -517,7 +516,7 @@ const CallPage = () => {
                                   <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-start" }}>
                                     <span className={`log-tag ${sentimentClass(log.sentimentTag)}`}>{log.sentimentTag}</span>
                                     <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
-                                      <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>{log.sentimentScore}</span>
+                                      <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>{log.sentimentScore ?? '-'}</span>
                                       <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>/10</span>
                                     </div>
                                   </div>

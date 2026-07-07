@@ -46,7 +46,7 @@ const CustomersPage = () => {
   });
 
   const [dateFilter, setDateFilter] = useState("All Time");
-  
+
   const [customers, setCustomers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,19 +64,19 @@ const CustomersPage = () => {
 
   useEffect(() => {
     const fetchCustomers = async () => {
+      if (!currentUser?.businessId) return;
       setIsLoading(true);
       try {
-        const bizId = currentUser?.businessId;
-        const url = bizId ? `/api/Customer/business/${bizId}` : '/api/Customer';
+        const url = `/api/Customer/business/${currentUser.businessId}`;
         const response = await apiClient.get(url);
         const data = response.data || [];
-        
+
         const mappedCustomers = data.map(c => {
           const totalOrders = c.orders?.length || 0;
           let loyaltyTier = "New";
           if (totalOrders > 10) loyaltyTier = "VIP";
           else if (totalOrders > 3) loyaltyTier = "Regular";
-          
+
           return {
             ...c,
             customerId: c.id || c.customerId || "UNKNOWN",
@@ -202,7 +202,6 @@ const CustomersPage = () => {
       >
         <Topbar
           pageTitle="Customers"
-          subtitle={`${dateFilter !== "All Time" ? stats.total : customers.length} customers registered across your business.`}
         >
           <div className="logs-search">
             <Search size={18} className="search-icon" />
@@ -384,187 +383,187 @@ const CustomersPage = () => {
                 <table className="customers-table logs-table">
                   <thead>
                     <tr>
-                    <th>Customer ID</th>
-                    <th
-                      className={
-                        sortConfig.key === "fullName"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("fullName")}
-                    >
-                      Name{" "}
-                      {getSortIndicator("fullName") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th
-                      className={
-                        sortConfig.key === "totalOrders"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("totalOrders")}
-                    >
-                      Orders{" "}
-                      {getSortIndicator("totalOrders") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th
-                      className={
-                        sortConfig.key === "loyalty"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("loyalty")}
-                    >
-                      Tier{" "}
-                      {getSortIndicator("loyalty") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                    <th
-                      className={
-                        sortConfig.key === "createdAt"
-                          ? "sort-active"
-                          : "sort-clickable"
-                      }
-                      onClick={() => requestSort("createdAt")}
-                    >
-                      Joined{" "}
-                      {getSortIndicator("createdAt") || (
-                        <span style={{ color: "transparent" }}>↓</span>
-                      )}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.length > 0 ? (
-                    sorted.map((c) => {
-                      const dt = formatDate(c.createdAt);
-                      return (
-                        <tr key={c.customerId}>
-                          <td>
-                            <span className="customer-id-chip">
-                              {c.customerId}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              style={{
-                                fontWeight: 600,
-                                color: "#1e293b",
-                                fontSize: "0.875rem",
-                              }}
-                            >
-                              {c.fullName}
-                            </span>
-                          </td>
-                          <td>
-                            {c.email ? (
-                              <span
-                                style={{
-                                  fontSize: "0.85rem",
-                                  color: "#475569",
-                                }}
-                              >
-                                {c.email}
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "#cbd5e1",
-                                  fontStyle: "italic",
-                                }}
-                              >
-                                —
-                              </span>
-                            )}
-                          </td>
-                          <td>
-                            {c.phone ? (
-                              <span
-                                style={{
-                                  fontSize: "0.85rem",
-                                  color: "#475569",
-                                  fontFamily: "monospace",
-                                }}
-                              >
-                                {c.phone}
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "#cbd5e1",
-                                  fontStyle: "italic",
-                                }}
-                              >
-                                —
-                              </span>
-                            )}
-                          </td>
-                          <td>
-                            <span
-                              style={{
-                                fontWeight: 700,
-                                color: "#1e293b",
-                                fontSize: "0.9rem",
-                              }}
-                            >
-                              {c.totalOrders}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              className={`log-tag tag-tier-${c.loyalty.toLowerCase()}`}
-                            >
-                              {c.loyalty}
-                            </span>
-                          </td>
-                          <td>
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  color: "#1e293b",
-                                  fontWeight: 500,
-                                }}
-                              >
-                                {dt.date}
-                              </span>
-                              <span
-                                style={{ fontSize: "0.7rem", color: "#94a3b8" }}
-                              >
-                                {dt.time}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="center-text"
-                        style={{ padding: "3rem", color: "#94a3b8" }}
+
+                      <th
+                        className={
+                          sortConfig.key === "fullName"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("fullName")}
                       >
-                        No customers match your search criteria.
-                      </td>
+                        Name{" "}
+                        {getSortIndicator("fullName") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th
+                        className={
+                          sortConfig.key === "totalOrders"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("totalOrders")}
+                      >
+                        Orders{" "}
+                        {getSortIndicator("totalOrders") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th
+                        className={
+                          sortConfig.key === "loyalty"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("loyalty")}
+                      >
+                        Tier{" "}
+                        {getSortIndicator("loyalty") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
+                      <th
+                        className={
+                          sortConfig.key === "createdAt"
+                            ? "sort-active"
+                            : "sort-clickable"
+                        }
+                        onClick={() => requestSort("createdAt")}
+                      >
+                        Joined{" "}
+                        {getSortIndicator("createdAt") || (
+                          <span style={{ color: "transparent" }}>↓</span>
+                        )}
+                      </th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {sorted.length > 0 ? (
+                      sorted.map((c) => {
+                        const dt = formatDate(c.createdAt);
+                        return (
+                          <tr key={c.customerId}>
+                            <td>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+                                <span
+                                  style={{
+                                    fontWeight: 600,
+                                    color: "#1e293b",
+                                    fontSize: "0.875rem",
+                                  }}
+                                >
+                                  {c.fullName}
+                                </span>
+                                <span style={{ fontSize: "0.7rem", color: "#64748b" }}>
+                                  #{c.customerId}
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              {c.email ? (
+                                <span
+                                  style={{
+                                    fontSize: "0.85rem",
+                                    color: "#475569",
+                                  }}
+                                >
+                                  {c.email}
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    color: "#cbd5e1",
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  —
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {c.phone ? (
+                                <span
+                                  style={{
+                                    fontSize: "0.85rem",
+                                    color: "#475569",
+                                    fontFamily: "monospace",
+                                  }}
+                                >
+                                  {c.phone}
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    color: "#cbd5e1",
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  —
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  color: "#1e293b",
+                                  fontSize: "0.9rem",
+                                }}
+                              >
+                                {c.totalOrders}
+                              </span>
+                            </td>
+                            <td>
+                              <span
+                                className={`log-tag tag-tier-${c.loyalty.toLowerCase()}`}
+                              >
+                                {c.loyalty}
+                              </span>
+                            </td>
+                            <td>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    color: "#1e293b",
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  {dt.date}
+                                </span>
+                                <span
+                                  style={{ fontSize: "0.7rem", color: "#94a3b8" }}
+                                >
+                                  {dt.time}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="7"
+                          className="center-text"
+                          style={{ padding: "3rem", color: "#94a3b8" }}
+                        >
+                          No customers match your search criteria.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>

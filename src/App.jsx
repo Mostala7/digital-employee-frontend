@@ -6,7 +6,7 @@ import PricingPage from "./pages/PricingPage";
 import PaymentPage from "./pages/PaymentPage";
 import ThankYouPage from "./pages/ThankYouPage";
 import DashboardPage from "./pages/DashboardPage";
-import SentimentsPage from "./pages/SentimentsPage";
+// import SentimentsPage from "./pages/SentimentsPage";
 import LogsPage from "./pages/LogsPage";
 import ConversationPage from "./pages/ConversationPage";
 import CustomersPage from "./pages/CustomersPage";
@@ -16,6 +16,9 @@ import SettingsPage from "./pages/SettingsPage";
 import ReportsPage from "./pages/ReportsPage";
 import AgentPage from "./pages/AgentPage";
 import CallPage from "./pages/CallPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminBusinessesPage from "./pages/AdminBusinessesPage";
+import AdminSubscriptionsPage from "./pages/AdminSubscriptionsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
@@ -37,14 +40,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/sentiments"
           element={
             <ProtectedRoute>
               <SentimentsPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/logs"
           element={
@@ -117,9 +120,34 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/businesses"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminBusinessesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/subscriptions"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminSubscriptionsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

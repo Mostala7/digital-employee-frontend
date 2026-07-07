@@ -91,16 +91,29 @@ const SentimentsPage = () => {
         const customers = custRes.data || [];
         const interactions = interRes.data || [];
 
+        const customerMap = {};
+        customers.forEach(c => {
+          const id = c.customerId || c.id;
+          if (id) {
+            customerMap[id] = c.fullName || c.name || c.customerName;
+          }
+        });
+
+        const interCustomerMap = {};
+        interactions.forEach(i => {
+          if (i.customerId) {
+            interCustomerMap[i.customerId] = i.customerName || i.customer?.fullName || i.customer?.name || customerMap[i.customerId];
+          }
+          const intId = i.interactionId || i.id;
+          if (intId && (i.customerName || i.customer?.fullName || i.customer?.name)) {
+            interCustomerMap[intId] = i.customerName || i.customer?.fullName || i.customer?.name;
+          }
+        });
+
         if (realSentiments.length > 0) {
           const mapped = realSentiments.map((item, idx) => {
-            const txt = (item.sourceText || item.message || "").toLowerCase();
             let type = "Satisfied";
-            if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
-              type = "Angry";
-            } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
-              type = "Neutral";
-            }
-
+            
             const lbl = (item.label || item.sentiment || "").toString().toLowerCase();
             if (lbl.includes("pos") || lbl.includes("satis") || lbl.includes("good")) {
               type = "Satisfied";
@@ -108,18 +121,31 @@ const SentimentsPage = () => {
               type = "Angry";
             } else if (lbl.includes("neu")) {
               type = "Neutral";
+            } else {
+              type = "Unrated";
             }
 
-            let rawScore = Number(item.score || 0);
-            let score = rawScore <= 1 && rawScore > 0 ? Number((rawScore * 10).toFixed(1)) : Number(rawScore.toFixed(1));
-            if (score === 0 || isNaN(score)) {
-              if (type === "Satisfied") score = txt.length > 20 ? 9.8 : 9.5;
-              else if (type === "Angry") score = txt.length > 20 ? 1.5 : 2.5;
-              else score = 5.5;
+            let rawScore = item.score !== undefined && item.score !== null ? Number(item.score) : null;
+            let score = null;
+            if (rawScore !== null && rawScore > 0) {
+              score = rawScore <= 1 ? Number((rawScore * 10).toFixed(1)) : Number(rawScore.toFixed(1));
+            }
+            if (score === null || score === 0 || isNaN(score)) {
+              if (type === "Satisfied") score = 9.5;
+              else if (type === "Angry") score = 2.5;
+              else if (type === "Neutral") score = 5.5;
+              else score = null;
             }
 
             let custName = item.customerName || item.customer?.fullName || item.customer?.name;
-            if (!custName || custName === "Customer") {
+            if (item.customerId) {
+              if (customerMap[item.customerId]) custName = customerMap[item.customerId];
+              else if (interCustomerMap[item.customerId]) custName = interCustomerMap[item.customerId];
+            } else if (item.messageId || item.interactionId || item.id) {
+              const lookupId = item.messageId || item.interactionId || item.id;
+              if (interCustomerMap[lookupId]) custName = interCustomerMap[lookupId];
+            }
+            if (!custName || custName === "Customer" || custName === "Unknown" || custName === "UNKNOWN") {
               custName = "Guest";
             }
 
@@ -133,39 +159,12 @@ const SentimentsPage = () => {
             };
           });
           setSentimentsList(mapped);
-        } else if (interactions.length > 0) {
-          // Derive real sentiments from real customer interactions
-          const derived = interactions.map((inter, idx) => {
-            let type = "Satisfied";
-            let score = 8.8;
-            const txt = (inter.summary || inter.transcript || inter.lastMessage || "").toLowerCase();
-            if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
-              type = "Angry";
-              score = 2.4;
-            } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
-              type = "Neutral";
-              score = 5.6;
-            }
-            let custName = inter.customerName || inter.customer?.fullName || inter.customer?.name;
-            if (!custName || custName === "Customer") {
-              custName = "Guest";
-            }
-            return {
-              id: inter.interactionId || inter.id || `inter-${idx}`,
-              customer: custName,
-              type: type,
-              message: inter.summary || inter.lastMessage || "Customer interaction logged via digital assistant.",
-              date: inter.createdAt ? new Date(inter.createdAt).toLocaleString() : "Recently",
-              score: score
-            };
-          });
-          setSentimentsList(derived);
         } else {
-          setSentimentsList(MOCK_SENTIMENTS);
+          setSentimentsList([]);
         }
       } catch (err) {
         console.error("Failed to load sentiments:", err);
-        if (isMounted) setSentimentsList(MOCK_SENTIMENTS);
+        if (isMounted) setSentimentsList([]);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -225,6 +224,12 @@ const SentimentsPage = () => {
                     onClick={() => setFilter("Angry")}
                   >
                     Angry
+                  </button>
+                  <button
+                    className={`filter-btn ${filter === "Unrated" ? "active" : ""}`}
+                    onClick={() => setFilter("Unrated")}
+                  >
+                    Unrated
                   </button>
                 </div>
               </div>
@@ -288,7 +293,7 @@ const SentimentsPage = () => {
                             }}
                           >
                             <span style={{ fontWeight: 700, color: "#0f172a" }}>
-                              {item.score}
+                              {item.score ?? '-'}
                             </span>
                             <div
                               className="score-bar-bg"

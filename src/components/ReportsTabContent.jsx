@@ -37,9 +37,11 @@ const ReportsTabContent = () => {
     } else if (selectedType === "Monthly") {
       from.setMonth(from.getMonth() - 1);
     } else if (selectedType === "Custom") {
+      const endD = new Date(endDate);
+      endD.setHours(23, 59, 59, 999);
       return {
         from: new Date(startDate).toISOString(),
-        to: new Date(endDate).toISOString(),
+        to: endD.toISOString(),
       };
     }
     return {

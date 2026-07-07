@@ -164,6 +164,12 @@ const Topbar = ({
     .substring(0, 2)
     .toUpperCase();
 
+  const userRoleDisplay = (() => {
+    const r = String(currentUser?.role || "").toLowerCase().replace(/[-_]/g, " ").trim();
+    if (r === "human agent" || r === "agent" || r === "human" || r.includes("human agent")) return "Human Agent";
+    return currentUser?.role || "Workspace Owner";
+  })();
+
   return (
     <>
       <header className="topbar">
@@ -243,11 +249,11 @@ const Topbar = ({
             )}
           </div>
 
+
           <div className="user-profile">
-            <div className="user-avatar">{initials}</div>
             <div className="user-info">
               <span className="user-name">{displayName}</span>
-              <span className="user-role">Workspace Owner</span>
+              <span className="user-role">{userRoleDisplay}</span>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogoutClick}>

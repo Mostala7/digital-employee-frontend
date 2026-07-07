@@ -72,8 +72,7 @@ const ConversationPage = () => {
           const allTickets = tktRes.data || [];
           fetchedTicket = allTickets.find(t => 
             (t.interactionId || t.InteractionId) === decodedId || 
-            (t.interactionId || t.InteractionId) === (intData.interactionId || intData.InteractionId || intData.id || intData.Id) ||
-            (t.customerId || t.CustomerId) === actualCustomerId
+            (t.interactionId || t.InteractionId) === (intData.interactionId || intData.InteractionId || intData.id || intData.Id)
           );
         }
 
@@ -98,6 +97,45 @@ const ConversationPage = () => {
           console.warn("Failed to fetch related order:", e);
         }
 
+        // Fetch feedbacks for 100% unified matching
+        const fbRes = actualBusinessId ? await apiClient.get(`/api/Feedback/business/${actualBusinessId}`).catch(() => ({ data: [] })) : { data: [] };
+        const feedbacksData = fbRes.data || [];
+        const feedbackMap = {};
+        const feedbackByCustomerMap = {};
+        const feedbackByNameMap = {};
+        feedbacksData.forEach(fb => {
+          const intId = fb.interactionId || fb.InteractionId;
+          const custId = fb.customerId || fb.CustomerId;
+          const custName = (fb.customerName || fb.CustomerName || "").toLowerCase().trim();
+          if (intId) feedbackMap[intId] = fb;
+          if (custId) {
+            if (!feedbackByCustomerMap[custId] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByCustomerMap[custId].createdAt || feedbackByCustomerMap[custId].CreatedAt)) {
+              feedbackByCustomerMap[custId] = fb;
+            }
+          }
+          if (custName) {
+            if (!feedbackByNameMap[custName] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByNameMap[custName].createdAt || feedbackByNameMap[custName].CreatedAt)) {
+              feedbackByNameMap[custName] = fb;
+            }
+          }
+        });
+
+        const getFbFor = (item) => {
+          const id = item.interactionId || item.id || item.InteractionId || item.Id;
+          const custId = item.customerId || item.CustomerId || item.customer?.id || item.customer?.Id;
+          const custName = (item.customer?.name || item.customerName || item.CustomerName || "").toLowerCase().trim();
+          return feedbackMap[id] || feedbackByCustomerMap[custId] || feedbackByNameMap[custName] || {};
+        };
+
+        const mainFb = getFbFor(intData);
+        const mainRating = mainFb.rating !== undefined && mainFb.rating !== null && Number(mainFb.rating) > 0 ? Number(mainFb.rating) : null;
+        let mainTag = "Unrated";
+        if (mainRating !== null) {
+          if (mainRating >= 4) mainTag = "Satisfied";
+          else if (mainRating <= 2) mainTag = "Angry";
+          else mainTag = "Neutral";
+        }
+
         // Map Interaction data
         setInteraction({
           ...intData,
@@ -110,23 +148,36 @@ const ConversationPage = () => {
           notes: intData.notes || "",
           startedAt: intData.startedAt || new Date().toISOString(),
           endedAt: intData.endedAt || null,
-          history: fetchedHistory.map(h => ({
-            id: h.interactionId || h.id,
-            customerName: h.customerName || "Unknown",
-            customerId: h.customerId,
-            channel: h.channel || "WebChat",
-            assignedUser: h.handledByAgentName || null,
-            status: h.status || "Open",
-            notes: h.notes || "—",
-            feedbackRating: h.feedback?.rating || null,
-            sentimentScore: h.sentimentScore || (h.sentimentTag === "Angry" ? 2 : 8),
-            sentimentTag: h.sentimentTag || "Neutral"
-          })),
+          feedbackRating: mainRating,
+          feedbackComment: mainFb.comment || null,
+          sentimentTag: mainTag,
+          history: fetchedHistory.map(h => {
+            const hFb = getFbFor(h);
+            const hRating = hFb.rating !== undefined && hFb.rating !== null && Number(hFb.rating) > 0 ? Number(hFb.rating) : null;
+            let hTag = "Unrated";
+            if (hRating !== null) {
+              if (hRating >= 4) hTag = "Satisfied";
+              else if (hRating <= 2) hTag = "Angry";
+              else hTag = "Neutral";
+            }
+            return {
+              id: h.interactionId || h.id,
+              customerName: h.customerName || "Unknown",
+              customerId: h.customerId,
+              channel: h.channel || "WebChat",
+              assignedUser: h.handledByAgentName || null,
+              status: h.status || "Open",
+              notes: h.notes || "—",
+              feedbackRating: hRating,
+              feedbackComment: hFb.comment || null,
+              sentimentTag: hTag
+            };
+          }),
           relatedTicket: fetchedTicket ? {
             ticketId: fetchedTicket.ticketId || fetchedTicket.id,
             subject: fetchedTicket.subject,
             priority: fetchedTicket.priorityLevel || fetchedTicket.priority || "Normal",
-            status: fetchedTicket.status || "Open",
+            status: (fetchedTicket.status === "Escalated" || fetchedTicket.status === "escalated") ? "Open" : (fetchedTicket.status || "Open"),
             assignedTo: fetchedTicket.assignedToUserName || fetchedTicket.assignedToUserId || "Unassigned",
             createdAt: fetchedTicket.createdAt
           } : null,
@@ -332,27 +383,29 @@ const ConversationPage = () => {
 
                 <div className="meta-divider" />
 
-                {/* CSAT & Sentiment — same layout as Logs table */}
+                {/* Feedback */}
                 <div className="meta-row">
-                  <span className="meta-label">CSAT &amp; Sentiment</span>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-end" }}>
+                  <span className="meta-label">Feedback</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end" }}>
                     <span className={`log-tag ${sentimentClass(interaction.sentimentTag)}`}>
                       {interaction.sentimentTag}
                     </span>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
-                      <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>
-                        {interaction.sentimentScore}
+                    {interaction.feedbackRating ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-end" }}>
+                        <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                          ★ {interaction.feedbackRating}/5
+                        </span>
+                        {interaction.feedbackComment && (
+                          <span style={{ fontSize: "0.75rem", color: "#64748b", fontStyle: "italic", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={interaction.feedbackComment}>
+                            "{interaction.feedbackComment}"
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "0.75rem", color: "#cbd5e1" }}>
+                        No feedback
                       </span>
-                      <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>/10</span>
-                      {interaction.feedback?.rating
-                        ? <span style={{ fontSize: "0.72rem", color: "#64748b", marginLeft: "6px" }}>
-                            · CSAT {interaction.feedback.rating}/10
-                          </span>
-                        : <span style={{ fontSize: "0.72rem", color: "#cbd5e1", marginLeft: "6px" }}>
-                            · No rating
-                          </span>
-                      }
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -523,7 +576,7 @@ const ConversationPage = () => {
                               <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-start" }}>
                                 <span className={`log-tag ${sentimentClass(log.sentimentTag)}`}>{log.sentimentTag}</span>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
-                                  <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>{log.sentimentScore}</span>
+                                  <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>{log.sentimentScore ?? '-'}</span>
                                   <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>/10</span>
                                   {log.feedbackRating
                                     ? <span style={{ fontSize: "0.72rem", color: "#64748b", marginLeft: "6px" }}>· CSAT {log.feedbackRating}/10</span>

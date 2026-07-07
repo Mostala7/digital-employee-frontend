@@ -24,7 +24,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const STATUSES = ["Resolved", "Active", "Escalated"];
 const CHANNELS = ["Calls", "WhatsApp", "Social Media", "Other"];
-const SENTIMENTS = ["Satisfied", "Neutral", "Angry"];
+const SENTIMENTS = ["Satisfied", "Neutral", "Angry", "Unrated"];
 
 const formatDateTime = (isoString) => {
   if (!isoString) return { date: "—", time: "" };
@@ -67,53 +67,58 @@ const LogsPage = () => {
 
   useEffect(() => {
     const fetchInteractions = async () => {
+      if (!currentUser?.businessId) return;
       setIsLoading(true);
       try {
-        const bizId = currentUser?.businessId;
-        const intUrl = bizId ? `/api/Interaction/business/${bizId}` : '/api/Interaction';
-        const fbUrl = bizId ? `/api/Feedback/business/${bizId}` : '/api/Feedback';
-        
+        const intUrl = `/api/Interaction/business/${currentUser.businessId}`;
+        const fbUrl = `/api/Feedback/business/${currentUser.businessId}`;
+
         // Fetch both Interactions and Feedbacks concurrently
         const [interactionsRes, feedbacksRes] = await Promise.all([
           apiClient.get(intUrl),
           apiClient.get(fbUrl).catch(() => ({ data: [] })) // Safe fallback
         ]);
-        
+
         const interactionsData = interactionsRes.data || [];
         const feedbacksData = feedbacksRes.data || [];
-        
-        // Map feedbacks by interactionId for O(1) lookup
+
+        // Map feedbacks by interactionId, customerId, or customerName for bulletproof O(1) lookup
         const feedbackMap = {};
+        const feedbackByCustomerMap = {};
+        const feedbackByNameMap = {};
+
         feedbacksData.forEach(fb => {
-          if (fb.interactionId) {
-            feedbackMap[fb.interactionId] = fb;
+          const intId = fb.interactionId || fb.InteractionId;
+          const custId = fb.customerId || fb.CustomerId;
+          const custName = (fb.customerName || fb.CustomerName || "").toLowerCase().trim();
+
+          if (intId) feedbackMap[intId] = fb;
+          if (custId) {
+            if (!feedbackByCustomerMap[custId] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByCustomerMap[custId].createdAt || feedbackByCustomerMap[custId].CreatedAt)) {
+              feedbackByCustomerMap[custId] = fb;
+            }
+          }
+          if (custName) {
+            if (!feedbackByNameMap[custName] || new Date(fb.createdAt || fb.CreatedAt) > new Date(feedbackByNameMap[custName].createdAt || feedbackByNameMap[custName].CreatedAt)) {
+              feedbackByNameMap[custName] = fb;
+            }
           }
         });
-        
-        const mappedInteractions = interactionsData.map(t => {
-          const id = t.interactionId || t.id;
-          const fb = feedbackMap[id] || {};
-          let score = fb.sentimentScore !== undefined && fb.sentimentScore !== null ? fb.sentimentScore : null;
-          
-          // Determine sentiment tag dynamically based on stitched score or text
-          let tag = "Satisfied";
-          const txt = (t.summary || t.transcript || t.lastMessage || "").toLowerCase();
-          
-          if (txt.includes("angry") || txt.includes("problem") || txt.includes("wrong") || txt.includes("cancel") || txt.includes("bad")) {
-            tag = "Angry";
-          } else if (txt.includes("okay") || txt.includes("question") || txt.includes("info") || txt.includes("hours")) {
-            tag = "Neutral";
-          }
 
-          if (score !== null) {
-            if (score >= 7) tag = "Satisfied";
-            else if (score <= 4) tag = "Angry";
+        const mappedInteractions = interactionsData.map(t => {
+          const id = t.interactionId || t.id || t.InteractionId || t.Id;
+          const custId = t.customerId || t.CustomerId || t.customer?.id || t.customer?.Id;
+          const custName = (t.customer?.name || t.customerName || t.CustomerName || "").toLowerCase().trim();
+
+          const fb = feedbackMap[id] || feedbackByCustomerMap[custId] || feedbackByNameMap[custName] || {};
+          const rating = fb.rating !== undefined && fb.rating !== null && Number(fb.rating) > 0 ? Number(fb.rating) : null;
+          const comment = fb.comment || null;
+
+          let tag = "Unrated";
+          if (rating !== null) {
+            if (rating >= 4) tag = "Satisfied";
+            else if (rating <= 2) tag = "Angry";
             else tag = "Neutral";
-          } else {
-            // Apply default score if none provided
-            if (tag === "Satisfied") score = txt.length > 20 ? 9.8 : 9.5;
-            else if (tag === "Angry") score = txt.length > 20 ? 1.5 : 2.5;
-            else score = 5.5;
           }
 
           return {
@@ -124,14 +129,14 @@ const LogsPage = () => {
             assignedUser: t.handledByUser?.fullName || null,
             status: t.status || "Active",
             notes: t.interactionType || "Standard",
-            feedbackRating: fb.rating || null,
-            sentimentScore: score,
+            feedbackRating: rating,
+            feedbackComment: comment,
             sentimentTag: tag,
             createdAt: t.startedAt || new Date().toISOString(),
             updatedAt: t.updatedAt || t.endedAt || t.lastUpdatedAt || t.startedAt || new Date().toISOString()
           };
         });
-        
+
         setInteractions(mappedInteractions);
       } catch (error) {
         console.error("Failed to fetch interactions:", error);
@@ -179,7 +184,7 @@ const LogsPage = () => {
         return d >= startOfDay(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
       return true;
     })();
-    
+
     const isCall = log.channel === 'Voice' || log.channel === 'Calls' || log.channel?.toLowerCase()?.includes('call');
     const matchesTab = logsTab === 'call' ? isCall : !isCall;
 
@@ -197,7 +202,7 @@ const LogsPage = () => {
     const isCall = log.channel === 'Voice' || log.channel === 'Calls' || log.channel?.toLowerCase()?.includes('call');
     const matchesTab = logsTab === 'call' ? isCall : !isCall;
     if (!matchesTab) return false;
-    
+
     if (dateFilter === "All Time") return true;
     const d = new Date(log.createdAt);
     if (dateFilter === "Today") return d >= startOfDay(new Date());
@@ -268,7 +273,6 @@ const LogsPage = () => {
       >
         <Topbar
           pageTitle="Interaction Logs"
-          subtitle="Complete historical archive of customer conversations and AI chat transcripts."
         >
           <div className="logs-search">
             <Search size={18} className="search-icon" />
@@ -302,6 +306,7 @@ const LogsPage = () => {
                   appearance: "none",
                   cursor: "pointer",
                   paddingRight: "1.5rem",
+                  maxWidth: "140px",
                 }}
               >
                 <option
@@ -433,7 +438,7 @@ const LogsPage = () => {
             style={{ padding: "1.25rem 1.5rem", marginTop: "0" }}
           >
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0' }}>
-              <button 
+              <button
                 style={{
                   background: 'none', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer',
                   fontWeight: 600, color: logsTab === 'chat' ? '#5b21b6' : '#64748b',
@@ -444,7 +449,7 @@ const LogsPage = () => {
               >
                 Chat Logs
               </button>
-              <button 
+              <button
                 style={{
                   background: 'none', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer',
                   fontWeight: 600, color: logsTab === 'call' ? '#5b21b6' : '#64748b',
@@ -456,7 +461,7 @@ const LogsPage = () => {
                 Call Logs
               </button>
             </div>
-            
+
             <div
               style={{
                 display: "flex",
@@ -513,8 +518,8 @@ const LogsPage = () => {
                       >
                         State {getSortIndicator("status") || <span style={{ color: "transparent" }}>↓</span>}
                       </th>
-                      <th>Context Summary</th>
-                      <th>CSAT &amp; Sentiment</th>
+
+                      <th>Feedback</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -604,27 +609,15 @@ const LogsPage = () => {
                             </span>
                           </td>
 
-                          {/* Notes */}
-                          <td style={{ maxWidth: "240px" }}>
-                            <span
-                              style={{
-                                color: "#475569",
-                                fontSize: "0.83rem",
-                                lineHeight: "1.4",
-                                display: "inline-block",
-                              }}
-                            >
-                              {log.notes || "—"}
-                            </span>
-                          </td>
 
-                          {/* CSAT & Sentiment */}
+
+                          {/* Feedback */}
                           <td>
                             <div
                               style={{
                                 display: "flex",
                                 flexDirection: "column",
-                                gap: "5px",
+                                gap: "4px",
                                 alignItems: "flex-start",
                               }}
                             >
@@ -633,52 +626,22 @@ const LogsPage = () => {
                               >
                                 {log.sentimentTag}
                               </span>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "baseline",
-                                  gap: "4px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontWeight: 700,
-                                    fontSize: "0.9rem",
-                                    color: "#1e293b",
-                                  }}
-                                >
-                                  {log.sentimentScore}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "0.72rem",
-                                    color: "#94a3b8",
-                                  }}
-                                >
-                                  /10
-                                </span>
-                                {log.feedbackRating ? (
-                                  <span
-                                    style={{
-                                      fontSize: "0.72rem",
-                                      color: "#64748b",
-                                      marginLeft: "6px",
-                                    }}
-                                  >
-                                    · CSAT {log.feedbackRating}/10
+                              {log.feedbackRating ? (
+                                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                  <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1e293b" }}>
+                                    ★ {log.feedbackRating}/5
                                   </span>
-                                ) : (
-                                  <span
-                                    style={{
-                                      fontSize: "0.72rem",
-                                      color: "#cbd5e1",
-                                      marginLeft: "6px",
-                                    }}
-                                  >
-                                    · No rating
-                                  </span>
-                                )}
-                              </div>
+                                  {log.feedbackComment && (
+                                    <span style={{ fontSize: "0.75rem", color: "#64748b", fontStyle: "italic", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={log.feedbackComment}>
+                                      "{log.feedbackComment}"
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: "0.75rem", color: "#cbd5e1" }}>
+                                  No feedback
+                                </span>
+                              )}
                             </div>
                           </td>
 
